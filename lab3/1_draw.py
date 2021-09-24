@@ -17,19 +17,23 @@ YELLOW = (255, 255, 0)
 CENTER_X = 400
 CENTER_Y = 400
 
-DELTA_X = 40  # Зрачки на DELTA_Y пикселей левее/правее вертикали
+DELTA_X = 70  # Зрачки на DELTA_Y пикселей левее/правее вертикали
 DELTA_Y = -25 # Зрачки на DELTA_Y пикслелей выше центра
 
-RADIUS_SMILE = 100
+RADIUS_SMILE = 130
 RADIUS_P = 12
+RADIUS_EYE_SMALL = 24
+RADIUS_EYE_BIG = 29
 
-X = [0, DELTA_X, - DELTA_X]
-Y = [0, DELTA_Y, DELTA_Y]
-RADIUS = [RADIUS_SMILE, RADIUS_P, RADIUS_P]
-COLOR = [YELLOW, BLACK, BLACK]
+# Смайлик, зрачки и глаза именно в таком порядке
+X = [0, DELTA_X, -DELTA_X, DELTA_X, -DELTA_X] 
+Y = [0, DELTA_Y, DELTA_Y, DELTA_Y, DELTA_Y]
+RADIUS = [RADIUS_SMILE, RADIUS_EYE_SMALL, RADIUS_EYE_BIG, RADIUS_P, RADIUS_P]
+COLOR = [YELLOW, RED, RED, BLACK, BLACK]
 
 for x, y, color, r in zip(X, Y, COLOR, RADIUS):
     circle(screen, color, (x + CENTER_X, y + CENTER_Y), r)
+    circle(screen, BLACK, (x + CENTER_X, y + CENTER_Y), r, 1)
 
 
 #circle(screen, YELLOW, CENTER, RADIUS)
