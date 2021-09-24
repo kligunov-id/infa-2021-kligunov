@@ -2,6 +2,6 @@
 
 This is a repository for MIPT's programming course
 
-# lab3
+## lab3
 
 Simple project on drawing basics in PyGame
