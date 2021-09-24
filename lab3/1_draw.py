@@ -25,24 +25,29 @@ RADIUS_P = 12
 RADIUS_EYE_SMALL = 24
 RADIUS_EYE_BIG = 29
 
+MOUTH_HALF_WIDTH = 70
+MOUTH_HALF_D = 15
+MOUTH_X, MOUTH_Y = 0 + CENTER_X, 80 + CENTER_Y 
+
 # Смайлик, зрачки и глаза именно в таком порядке
-X = [0, DELTA_X, -DELTA_X, DELTA_X, -DELTA_X] 
-Y = [0, DELTA_Y, DELTA_Y, DELTA_Y, DELTA_Y]
+X =      [0,            DELTA_X,          -DELTA_X,       DELTA_X,  -DELTA_X] 
+Y =      [0,            DELTA_Y,          DELTA_Y,        DELTA_Y,  DELTA_Y]
 RADIUS = [RADIUS_SMILE, RADIUS_EYE_SMALL, RADIUS_EYE_BIG, RADIUS_P, RADIUS_P]
-COLOR = [YELLOW, RED, RED, BLACK, BLACK]
+COLOR =  [YELLOW,       RED,              RED,            BLACK,    BLACK]
 
 for x, y, color, r in zip(X, Y, COLOR, RADIUS):
     circle(screen, color, (x + CENTER_X, y + CENTER_Y), r)
-    circle(screen, BLACK, (x + CENTER_X, y + CENTER_Y), r, 1)
+    circle(screen, BLACK, (x + CENTER_X, y + CENTER_Y), r, 1) # Окантовка
 
+# Прямоугольник-рот
+# TODO: циклик по всем прямоугольникам
 
-#circle(screen, YELLOW, CENTER, RADIUS)
-#circle(screen, BLACK, LEFT_EYE, PUPIL_R)
-#circle(screen, BLACK, RIGHT_EYE, PUPIL_R)
+polygon(screen, BLACK, [
+    (MOUTH_X - MOUTH_HALF_WIDTH, MOUTH_Y - MOUTH_HALF_D),
+    (MOUTH_X - MOUTH_HALF_WIDTH, MOUTH_Y + MOUTH_HALF_D),
+    (MOUTH_X + MOUTH_HALF_WIDTH, MOUTH_Y + MOUTH_HALF_D),
+    (MOUTH_X + MOUTH_HALF_WIDTH, MOUTH_Y - MOUTH_HALF_D)])
 
-#rect(screen, (255, 0, 255), (100, 100, 200, 200))
-#polygon(screen, (255, 255, 0), [(100,100), (200,50),
-#circle(screen, (0, 255, 0), (200, 175), 50)
 
 pygame.display.update()
 clock = pygame.time.Clock()
