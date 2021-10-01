@@ -46,8 +46,38 @@ def tree(x, y, radius = 30, scale = 1):
         circle(screen, LEAVES, (x + dx * scale, y + dy * scale), radius * scale)
         circle(screen, BLACK, (x + dx * scale, y + dy * scale), radius * scale, width = 1) #Окантовка
 
-def house(x, y, w = 300, h = 100, scale = 1):
-        pass
+def house(x, y, w = 100, h = 75, scale = 1):
+    # Body
+    polygon(screen, BROWN, [
+         (x - w * scale, y - h * scale),
+         (x + w * scale, y - h * scale),
+         (x + w * scale, y + h * scale),
+         (x - w * scale, y + h * scale)])
+    polygon(screen, BLACK, [
+         (x - w * scale, y - h * scale),
+         (x + w * scale, y - h * scale),
+         (x + w * scale, y + h * scale),
+         (x - w * scale, y + h * scale)], width = 1)
+    # Window
+    polygon(screen, GLASS, [
+         (x - w * scale / 3, y - h * scale / 3),
+         (x + w * scale / 3, y - h * scale / 3),
+         (x + w * scale / 3, y + h * scale / 3),
+         (x - w * scale / 3, y + h * scale / 3)])
+    polygon(screen, PINK, [
+         (x - w * scale, y - h * scale),
+         (x + w * scale, y - h * scale),
+         (x + w * scale, y + h * scale),
+         (x - w * scale, y + h * scale)], width = 1)
+    # Roof
+    polygon(screen, PINK, [
+         (x - w * scale, y - h * scale),
+         (x + w * scale, y - h * scale),
+         (x, y - 2 * h * scale)])
+    polygon(screen, BLACK, [
+         (x - w * scale, y - h * scale),
+         (x + w * scale, y - h * scale),
+         (x, y - 2 * h * scale)], width = 1)
 
 def cloud(x, y, radius = 30, scale = 1):
     """Рисует 5 кругов с центром в (x, y) со смещениями DELTA_X и DELTA_Y"""
@@ -65,12 +95,13 @@ def picture():
     """Собирает всю картинку"""
     background()
     sun(50, 50)
-    cloud(200, 80, scale = 1)
-    cloud(600, 110, scale = 0.8)
-    cloud(1000, 90, scale = 1.2)
+    cloud(200, 80, scale = 1.2)
+    cloud(600, 110, scale = 1)
+    cloud(1000, 90, scale = 1.4)
     tree(500, 500, scale = 1.2)
     tree(1000, 400)
-
+    house(200, 600)
+    house(700, 500, scale = 0.8)
 picture()
 
 # Обновление экрана
