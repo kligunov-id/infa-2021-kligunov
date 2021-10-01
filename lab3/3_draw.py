@@ -32,31 +32,46 @@ def background():
          (W, H),
          (0, W)])
 
-def tree(x, y, scale = 1):
-    pass
+def tree(x, y, radius = 30, scale = 1):
+    """Рисует 5 кругов с центром в (x, y) со смещениями DELTA_X и DELTA_Y и палку в точке (x, y)"""
+    polygon(screen, BLACK, [
+         (x - radius * scale / 5, y),
+         (x + radius * scale / 5, y),
+         (x + radius * scale / 5, y + radius * scale * 3),
+         (x - radius * scale / 5, y + radius * scale * 3)])
 
-def house(x, y, scale = 1):
-    pass
+    DELTA_Y = [-100, -70, -70, -40, -20, -20]
+    DELTA_X = [0, -30, 30, 0, 30, -30]
+    for dx, dy in zip(DELTA_X, DELTA_Y):
+        circle(screen, LEAVES, (x + dx * scale, y + dy * scale), radius * scale)
+        circle(screen, BLACK, (x + dx * scale, y + dy * scale), radius * scale, width = 1) #Окантовка
+
+def house(x, y, w = 300, h = 100, scale = 1):
+        pass
 
 def cloud(x, y, radius = 30, scale = 1):
-    """ Рисует 5 кругов с центром в (x, y) со смещениями DELTA_X и DELTA_Y"""
+    """Рисует 5 кругов с центром в (x, y) со смещениями DELTA_X и DELTA_Y"""
     DELTA_X = [-30, -10, 10, 30, -10, 10]
     DELTA_Y = [15, 15, 15, 15, -15, -15]
     for dx, dy in zip(DELTA_X, DELTA_Y):
-        circle(screen, WHITE, (x + dx, y + dy), radius * scale)
-        circle(screen, BLACK, (x + dx, y + dy), radius * scale, width = 1) #Окантовка
+        circle(screen, WHITE, (x + dx * scale, y + dy * scale), radius * scale)
+        circle(screen, BLACK, (x + dx * scale, y + dy * scale), radius * scale, width = 1) #Окантовка
 
 
 def sun(x, y, radius = 40, scale = 1):
     circle(screen, GLASS, (x, y), radius * scale)
 
+def picture():
+    """Собирает всю картинку"""
+    background()
+    sun(50, 50)
+    cloud(200, 80, scale = 1)
+    cloud(600, 110, scale = 0.8)
+    cloud(1000, 90, scale = 1.2)
+    tree(500, 500, scale = 1.2)
+    tree(1000, 400)
 
-background()
-sun(50, 50)
-cloud(200, 80, scale = 1)
-cloud(600, 110, scale = 0.8)
-cloud(1000, 90, scale = 1.2)
-
+picture()
 
 # Обновление экрана
 pygame.display.update()
