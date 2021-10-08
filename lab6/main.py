@@ -63,11 +63,19 @@ def click(ClickEvent):
 
     :param ClickEvent: mouse event to be handled
     """
+
+    # Checking if we hit anything
     if dist2(ClickEvent.pos, (x, y)) <= r ** 2:
         global t, score
-        score += t ** 2 // r
-        t = 0
 
+        # Score update. The smaller the ball and the faster it was clicked the better the score
+        score += t // (r // 5)
+
+        # Ball termination
+        t = 0
+    else :
+        # Punishing for misses
+        score -= 1
 
 # Pygame setup
 pygame.display.update()
