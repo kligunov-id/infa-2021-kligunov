@@ -4,7 +4,7 @@ from random import randint
 
 # Game initialization
 pygame.init()
-FPS = 1
+FPS = 60
 screen = pygame.display.set_mode((1200, 900))
 
 
@@ -14,22 +14,36 @@ YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
 MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
-BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
-# Ball coordinates and creation
+# Ball coordinates, radius and color
+x, y, r, color = 0, 0, 0, RED
 
-x, y, r = 0, 0, 0
+# Ball lifespan
+t = 0
 
 def new_ball():
     """
-    Draws new ball with randomly chosen position and color
+    Creates new ball with randomly chosen position and color
+    
+    :returns: (x_center, y_center, radius, color, lifespan) 
     """
     x = randint(100, 1100)
     y = randint(100, 900)
     r = randint(10, 100)
+    t = 60
     color = COLORS[randint(0, 5)]
-    circle(screen, color, (x, y), r)
+    return (x, y, r, color, t)
+
+
+def click():
+    """
+    Handles mouse clicks events
+    Clicked balls should disapper
+    """
+    print('Click')
+
 
 # Pygame setup
 pygame.display.update()
@@ -45,11 +59,16 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print('Click!')
+            click()
     
     # Game engine
-    new_ball()
+    if t <= 0:
+        x, y, r, color, t = new_ball()
+    t -= 1
+
+    # Graphics
+    circle(screen, color, (x, y), r)
     pygame.display.update()
-    screen.fill(BLACK)
+    screen.fill(WHITE)
 
 pygame.quit()
