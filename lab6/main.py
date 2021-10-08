@@ -4,6 +4,8 @@ from random import randint
 
 # Game initialization
 pygame.init()
+pygame.font.init()
+score_font = pygame.font.SysFont('JetBrains Mono',  30)
 FPS = 60
 screen = pygame.display.set_mode((1200, 900))
 
@@ -15,6 +17,7 @@ GREEN = (0, 255, 0)
 MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 # Ball coordinates, radius and color
@@ -50,6 +53,8 @@ def new_ball():
     color = COLORS[randint(0, 5)]
     return (x, y, r, color, t)
 
+# Current game score
+score = 0
 
 def click(ClickEvent):
     """
@@ -59,9 +64,9 @@ def click(ClickEvent):
     :param ClickEvent: mouse event to be handled
     """
     if dist2(ClickEvent.pos, (x, y)) <= r ** 2:
-        global t
+        global t, score
+        score += t ** 2 // r
         t = 0
-        print('Hit')
 
 
 # Pygame setup
@@ -86,8 +91,14 @@ while not finished:
         x, y, r, color, t = new_ball()
     t -= 1
 
-    # Graphics
+    # Render circles
     circle(screen, color, (x, y), r)
+    
+    # Render score
+    textsurface = score_font.render(f"Score := {score}", True, BLACK)
+    screen.blit(textsurface, (30, 10))
+
+    # Apply changes
     pygame.display.update()
     screen.fill(WHITE)
 
