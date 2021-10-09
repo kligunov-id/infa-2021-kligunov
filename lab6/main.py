@@ -87,6 +87,44 @@ def click(ClickEvent):
         score -= 1
 
 
+# Collison types
+COLLISION_NEGATIVE = -1 # Ball's too far to the left/top
+COLLISION_NONE     = 0  # Ball's inside the walls
+COLLISION_POSITIVE = 1  # Ball's too far to the right/bottom
+
+def check_collision(x, y, Vx, Vy):
+    """
+    Derermines if the ball hit the wall and returns collision type
+
+    :param x: X coordinate of the ball
+    :param y: Y coordinate of the ball
+    :param Vx: X coordinate of the ball's velocity
+    :param Vy: Y coordinate of the ball's velocity
+
+    :returns: List (x_type, y_type), where x_type and y_type are
+              one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
+              
+    ..warning:: This is a mock function
+    """
+    return (COLLISION_NONE, COLLISION_NONE)
+
+
+def generate_velocity(x_type, y_type):
+    """
+    Generates random velocity for the ball after wall collision
+    Velocities are chosen so ball will rebound from the wall
+
+    :param x_type: Type of the collision with vertical walls,
+                   one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
+    :param y_type: Type of the collision with horizontal walls,
+                   one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
+
+    :returns: List (Vx, Vy) where Vx and Vy are projections of the new velocity
+                                                        onto the corresponding axis
+    ..warning:: This is a mock function
+    """
+    return (randint(0, 0), randint(0, 0))
+
 # Pygame setup
 pygame.display.update()
 clock = pygame.time.Clock()
@@ -112,6 +150,11 @@ while not finished:
     # Moving ball
     x += Vx
     y += Vy
+    
+    # Handle collisions
+    if check_collision(x, y, Vx, Vy) != (COLLISION_NONE, COLLISION_NONE):
+        print("Collision's happened")
+        Vx, Vy = generate_velocity(*check_collision(x, y, Vx, Vy))
 
     # Render circles
     circle(screen, color, (x, y), r)
