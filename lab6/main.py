@@ -4,10 +4,13 @@ from random import randint
 
 # Game initialization
 pygame.init()
+
 pygame.font.init()
 score_font = pygame.font.SysFont('JetBrains Mono',  30)
+
 FPS = 60
-screen = pygame.display.set_mode((1200, 900))
+WIDTH, HEIGHT = 1200, 900
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 # Colors
 RED  = (255, 0, 0)
@@ -58,6 +61,7 @@ def new_ball():
     Vy = randint(-5, 5)
     return (x, y, Vx, Vy, r, color, t)
 
+
 # Current game score
 score = 0
 
@@ -81,6 +85,7 @@ def click(ClickEvent):
     else :
         # Punishing for misses
         score -= 1
+
 
 # Pygame setup
 pygame.display.update()
