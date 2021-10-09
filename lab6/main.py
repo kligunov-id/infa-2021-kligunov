@@ -23,6 +23,9 @@ COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 # Ball coordinates, radius and color
 x, y, r, color = 0, 0, 0, RED
 
+#Ball speed
+Vx, Vy = 0, 0
+
 # Ball lifespan
 t = 0
 
@@ -42,16 +45,18 @@ def dist2(p, q):
 
 def new_ball():
     """
-    Randomly chooses position, radius and color for the ball
+    Randomly chooses position, velocity, radius and color for the ball
     
-    :returns: (x_center, y_center, radius, color, lifespan) 
+    :returns: (x_center, y_center, velocity_x, velocity_y, radius, color, lifespan) 
     """
     x = randint(100, 1100)
     y = randint(100, 900)
     r = randint(10, 100)
     t = 60
     color = COLORS[randint(0, 5)]
-    return (x, y, r, color, t)
+    Vx = randint(-5, 5)
+    Vy = randint(-5, 5)
+    return (x, y, Vx, Vy, r, color, t)
 
 # Current game score
 score = 0
@@ -96,8 +101,12 @@ while not finished:
     # Game engine
     if t <= 0:
         # Initializing new ball
-        x, y, r, color, t = new_ball()
+        x, y, Vx, Vy, r, color, t = new_ball()
     t -= 1
+
+    # Moving ball
+    x += Vx
+    y += Vy
 
     # Render circles
     circle(screen, color, (x, y), r)
