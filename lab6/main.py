@@ -26,7 +26,7 @@ COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 # Ball coordinates, radius and color
 x, y, r, color = 0, 0, 0, RED
 
-#Ball speed
+# Ball speed
 Vx, Vy = 0, 0
 
 # Ball lifespan
@@ -36,8 +36,8 @@ def dist2(p, q):
     """
     Returns distance squared between points p and q
     
-    :param p: Pair of coordinates (x, y) of the first point
-    :param q: Pair of coordinates (x, y) of the second point
+    :param p: List of coordinates (x, y) of the first point
+    :param q: List of coordinates (x, y) of the second point
     
     .. warning:: Distance returned is squared
     """
@@ -50,7 +50,7 @@ def new_ball():
     """
     Randomly chooses position, velocity, radius and color for the ball
     
-    :returns: (x_center, y_center, velocity_x, velocity_y, radius, color, lifespan) 
+    :returns: List (x_center, y_center, velocity_x, velocity_y, radius, color, lifespan) 
     """
     x = randint(100, 1100)
     y = randint(100, 900)
@@ -70,14 +70,14 @@ def click(ClickEvent):
     Handles mouse clicks events
     Clicked balls should disapper
 
-    :param ClickEvent: mouse event to be handled
+    :param ClickEvent: Mouse event to be handled
     """
 
     # Checking if we hit anything
     if dist2(ClickEvent.pos, (x, y)) <= r ** 2:
         global t, score
 
-        # Score update. The smaller the ball and the faster it was clicked the better the score
+        # Score update: the smaller the ball and the faster it was clicked the better the score
         score += t // (r // 5)
 
         # Ball termination
@@ -103,7 +103,7 @@ def check_collision(x, y, Vx, Vy):
 
     :returns: List (x_type, y_type), where x_type and y_type are
               one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
-              
+
     ..warning:: This is a mock function
     """
     return (COLLISION_NONE, COLLISION_NONE)
@@ -112,7 +112,7 @@ def check_collision(x, y, Vx, Vy):
 def generate_velocity(x_type, y_type):
     """
     Generates random velocity for the ball after wall collision
-    Velocities are chosen so ball will rebound from the wall
+    After velocity generation ball will move away from the wall
 
     :param x_type: Type of the collision with vertical walls,
                    one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
@@ -124,6 +124,7 @@ def generate_velocity(x_type, y_type):
     ..warning:: This is a mock function
     """
     return (randint(0, 0), randint(0, 0))
+
 
 # Pygame setup
 pygame.display.update()
@@ -143,27 +144,27 @@ while not finished:
     
     # Game engine
     if t <= 0:
-        # Initializing new ball
+        # Creation of a new ball
         x, y, Vx, Vy, r, color, t = new_ball()
     t -= 1
 
-    # Moving ball
+    # Ball movement
     x += Vx
     y += Vy
     
-    # Handle collisions
+    # Collision handling
     if check_collision(x, y, Vx, Vy) != (COLLISION_NONE, COLLISION_NONE):
         print("Collision's happened")
         Vx, Vy = generate_velocity(*check_collision(x, y, Vx, Vy))
 
-    # Render circles
+    # Ball rendering
     circle(screen, color, (x, y), r)
     
-    # Render score
+    # Score rendering
     textsurface = score_font.render(f"Score := {score}", True, BLACK)
     screen.blit(textsurface, (30, 10))
 
-    # Apply changes
+    # Display update
     pygame.display.update()
     screen.fill(WHITE)
 
