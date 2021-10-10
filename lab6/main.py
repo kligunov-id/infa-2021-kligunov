@@ -27,7 +27,7 @@ COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 x, y, r, color = 0, 0, 0, RED
 
 # Ball speed
-Vx, Vy = 0, 0
+v_x, v_y = 0, 0
 
 # Ball lifespan
 t = 0
@@ -50,16 +50,16 @@ def new_ball():
     """
     Randomly chooses position, velocity, radius and color for the ball
     
-    :returns: List (x_center, y_center, velocity_x, velocity_y, radius, color, lifespan) 
+    :returns: List (center_x, center_y, velocity_x, velocity_y, radius, color, lifespan) 
     """
     x = randint(100, 1100)
     y = randint(100, 900)
     r = randint(10, 100)
     t = 60
     color = COLORS[randint(0, 5)]
-    Vx = randint(-5, 5)
-    Vy = randint(-5, 5)
-    return (x, y, Vx, Vy, r, color, t)
+    v_x = randint(-5, 5)
+    v_y = randint(-5, 5)
+    return (x, y, v_x, v_y, r, color, t)
 
 
 # Current game score
@@ -77,7 +77,8 @@ def click(ClickEvent):
     if dist2(ClickEvent.pos, (x, y)) <= r ** 2:
         global t, score
 
-        # Score update: the smaller the ball and the faster it was clicked the better the score
+        # Score update:
+        # the smaller the ball and the faster it was clicked the better the score
         score += t // (r // 5)
 
         # Ball termination
@@ -92,14 +93,14 @@ COLLISION_NEGATIVE = -1 # Ball's too far to the left/top
 COLLISION_NONE     = 0  # Ball's inside the walls
 COLLISION_POSITIVE = 1  # Ball's too far to the right/bottom
 
-def check_collision(x, y, Vx, Vy):
+def check_collision(x, y, v_x, v_y):
     """
     Derermines if the ball hit the wall and returns collision type
 
     :param x: X coordinate of the ball
     :param y: Y coordinate of the ball
-    :param Vx: X coordinate of the ball's velocity
-    :param Vy: Y coordinate of the ball's velocity
+    :param v_x: X coordinate of the ball's velocity
+    :param v_y: Y coordinate of the ball's velocity
 
     :returns: List (x_type, y_type), where x_type and y_type are
               one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
@@ -119,7 +120,7 @@ def generate_velocity(x_type, y_type):
     :param y_type: Type of the collision with horizontal walls,
                    one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
 
-    :returns: List (Vx, Vy) where Vx and Vy are projections of the new velocity
+    :returns: List (v_x, v_y) where v_x and v_y are projections of the new velocity
                                                         onto the corresponding axis
     ..warning:: This is a mock function
     """
@@ -145,17 +146,17 @@ while not finished:
     # Game engine
     if t <= 0:
         # Creation of a new ball
-        x, y, Vx, Vy, r, color, t = new_ball()
+        x, y, v_x, v_y, r, color, t = new_ball()
     t -= 1
 
     # Ball movement
-    x += Vx
-    y += Vy
+    x += v_x
+    y += v_y
     
     # Collision handling
-    if check_collision(x, y, Vx, Vy) != (COLLISION_NONE, COLLISION_NONE):
+    if check_collision(x, y, v_x, v_y) != (COLLISION_NONE, COLLISION_NONE):
         print("Collision's happened")
-        Vx, Vy = generate_velocity(*check_collision(x, y, Vx, Vy))
+        v_x, v_y = generate_velocity(*check_collision(x, y, v_x, v_y))
 
     # Ball rendering
     circle(screen, color, (x, y), r)
