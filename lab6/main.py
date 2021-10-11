@@ -55,7 +55,7 @@ def new_ball():
     x = randint(100, 1100)
     y = randint(100, 900)
     r = randint(10, 100)
-    t = 60
+    t = 600
     color = COLORS[randint(0, 5)]
     v_x = randint(-5, 5)
     v_y = randint(-5, 5)
@@ -93,10 +93,11 @@ COLLISION_NEGATIVE = -1 # Ball's too far to the left/top
 COLLISION_NONE     = 0  # Ball's inside the walls
 COLLISION_POSITIVE = 1  # Ball's too far to the right/bottom
 
-def check_collision(x, y, v_x, v_y):
+def check_collision(r, x, y, v_x, v_y):
     """
-    Derermines if the ball hit the wall and returns collision type
+    Determines if the ball hit the wall and returns collision type
 
+    :param r: Radius of the ball
     :param x: X coordinate of the ball
     :param y: Y coordinate of the ball
     :param v_x: X coordinate of the ball's velocity
@@ -104,10 +105,20 @@ def check_collision(x, y, v_x, v_y):
 
     :returns: List (x_type, y_type), where x_type and y_type are
               one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
-
-    ..warning:: This is a mock function
     """
-    return (COLLISION_NONE, COLLISION_NONE)
+    x_type = COLLISION_NONE
+    if x < r and v_x < 0:
+        x_type = COLLISION_NEGATIVE
+    elif x > WIDTH - r and v_x > 0:
+        x_type = COLLISION_POSITIVE
+    
+    y_type = COLLISION_NONE
+    if y < r and v_y < 0:
+        y_type = COLLISION_NEGATIVE
+    elif y > HEIGHT - r and v_y > 0:
+        y_type = COLLISION_POSITIVE
+
+    return (x_type, y_type)
 
 
 def generate_velocity(x_type, y_type):
@@ -124,7 +135,19 @@ def generate_velocity(x_type, y_type):
                                                         onto the corresponding axis
     ..warning:: This is a mock function
     """
-    return (randint(0, 0), randint(0, 0))
+    v_x = randint(-5, 5)
+    if x_type == COLLISION_NEGATIVE:
+        v_x = randint(1, 5)
+    elif x_type == COLLISION_POSITIVE:
+        v_x = randint(-5, 0)
+
+    v_y = randint(-5, 5)
+    if y_type == COLLISION_NEGATIVE:
+        v_y = randint(1, 5)
+    elif y_type == COLLISION_POSITIVE:
+        v_y = randint(-5, 0)
+
+    return (v_x, v_y)
 
 
 # Pygame setup
@@ -154,9 +177,9 @@ while not finished:
     y += v_y
     
     # Collision handling
-    if check_collision(x, y, v_x, v_y) != (COLLISION_NONE, COLLISION_NONE):
+    if check_collision(r, x, y, v_x, v_y) != (COLLISION_NONE, COLLISION_NONE):
         print("Collision's happened")
-        v_x, v_y = generate_velocity(*check_collision(x, y, v_x, v_y))
+        v_x, v_y = generate_velocity(*check_collision(r, x, y, v_x, v_y))
 
     # Ball rendering
     circle(screen, color, (x, y), r)
