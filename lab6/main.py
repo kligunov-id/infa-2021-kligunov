@@ -43,6 +43,8 @@ def dist2(p, q):
     return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
 
+MAXV = 4
+
 def new_ball():
     """
     Randomly chooses position, velocity, radius and color for the ball
@@ -54,8 +56,8 @@ def new_ball():
     r = randint(10, 100)
     t = randint(150, 250)
     color = COLORS[randint(0, 5)]
-    v_x = randint(-5, 5)
-    v_y = randint(-5, 5)
+    v_x = randint(-MAXV, MAXV + 1)
+    v_y = randint(-MAXV, MAXV + 1)
     return (x, y, v_x, v_y, r, color, t)
 
 
@@ -132,17 +134,17 @@ def generate_velocity(x_type, y_type):
     :returns: List (v_x, v_y) where v_x and v_y are projections of the new velocity
                                                         onto the corresponding axis
     """
-    v_x = randint(-5, 5)
+    v_x = randint(-MAXV, MAXV + 1)
     if x_type == COLLISION_NEGATIVE:
-        v_x = randint(1, 5)
+        v_x = randint(1, MAXV + 1)
     elif x_type == COLLISION_POSITIVE:
-        v_x = randint(-5, 0)
+        v_x = randint(-MAXV, 0)
 
-    v_y = randint(-5, 5)
+    v_y = randint(-MAXV, MAXV + 1)
     if y_type == COLLISION_NEGATIVE:
-        v_y = randint(1, 5)
+        v_y = randint(1, MAXV + 1)
     elif y_type == COLLISION_POSITIVE:
-        v_y = randint(-5, 0)
+        v_y = randint(-MAXV, 0)
 
     return (v_x, v_y)
 
