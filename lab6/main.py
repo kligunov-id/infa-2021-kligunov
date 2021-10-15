@@ -23,14 +23,11 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
-# Ball coordinates, radius and color
-x, y, r, color = 0, 0, 0, RED
+# Ball characteristics
+N = 5
 
-# Ball speed
-v_x, v_y = 0, 0
-
-# Ball lifespan
-t = 0
+x, y, v_x, v_y = [0] * N, [0] * N, [0] * N, [0] * N
+r, color, t = [0] * N, [BLACK] * N, [0] * N
 
 def dist2(p, q):
     """
@@ -55,7 +52,7 @@ def new_ball():
     x = randint(100, 1100)
     y = randint(100, 900)
     r = randint(10, 100)
-    t = 600
+    t = randint(50, 80)
     color = COLORS[randint(0, 5)]
     v_x = randint(-5, 5)
     v_y = randint(-5, 5)
@@ -72,20 +69,21 @@ def click(ClickEvent):
 
     :param ClickEvent: Mouse event to be handled
     """
+    global t, score
 
     # Checking if we hit anything
-    if dist2(ClickEvent.pos, (x, y)) <= r ** 2:
-        global t, score
+    for i in range(N):
+        if dist2(ClickEvent.pos, (x[i], y[i])) <= r[i] ** 2:
+            
+            # Score update:
+            # the smaller the ball and the faster it was clicked the better the score
+            score += t[i] // (r[i] // 5)
 
-        # Score update:
-        # the smaller the ball and the faster it was clicked the better the score
-        score += t // (r // 5)
-
-        # Ball termination
-        t = 0
-    else :
-        # Punishing for misses
-        score -= 1
+            # Ball termination
+            t[i] = 0
+        else :
+            # Punishing for misses
+            score -= 1
 
 
 # Collison types
@@ -133,7 +131,6 @@ def generate_velocity(x_type, y_type):
 
     :returns: List (v_x, v_y) where v_x and v_y are projections of the new velocity
                                                         onto the corresponding axis
-    ..warning:: This is a mock function
     """
     v_x = randint(-5, 5)
     if x_type == COLLISION_NEGATIVE:
@@ -167,22 +164,26 @@ while not finished:
             click(event)
     
     # Game engine
-    if t <= 0:
-        # Creation of a new ball
-        x, y, v_x, v_y, r, color, t = new_ball()
-    t -= 1
+    for i in range(N):
+        if t[i] <= 0:
+            # Creation of a new ball
+            x[i], y[i], v_x[i], v_y[i], r[i], color[i], t[i] = new_ball()
+        t[i] -= 1
 
     # Ball movement
-    x += v_x
-    y += v_y
+    for i in range(N):
+        x[i] += v_x[i]
+        y[i] += v_y[i]
     
     # Collision handling
-    if check_collision(r, x, y, v_x, v_y) != (COLLISION_NONE, COLLISION_NONE):
-        print("Collision's happened")
-        v_x, v_y = generate_velocity(*check_collision(r, x, y, v_x, v_y))
+    for i in range(N):
+        collision_type = check_collision(r[i], x[i], y[i], v_x[i], v_y[i])
+        if collision_type != (COLLISION_NONE, COLLISION_NONE):
+            v_x[i], v_y[i] = generate_velocity(*collision_type)
 
     # Ball rendering
-    circle(screen, color, (x, y), r)
+    for i in range(N):
+        circle(screen, color[i], (x[i], y[i]), r[i])
     
     # Score rendering
     textsurface = score_font.render(f"Score := {score}", True, BLACK)
