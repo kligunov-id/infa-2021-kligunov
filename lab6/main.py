@@ -53,7 +53,7 @@ def new_ball():
     """
     x = randint(100, 1100)
     y = randint(100, 900)
-    r = randint(10, 100)
+    r = randint(30, 100)
     t = randint(150, 250)
     color = COLORS[randint(0, 5)]
     v_x = randint(-MAXV, MAXV + 1)
@@ -74,18 +74,23 @@ def click(ClickEvent):
     global t, score
 
     # Checking if we hit anything
+
+    hit = False
     for i in range(N):
         if dist2(ClickEvent.pos, (x[i], y[i])) <= r[i] ** 2:
             
             # Score update:
             # the smaller the ball and the faster it was clicked the better the score
-            score += t[i] // (r[i] // 5)
-
+            score += int((t[i] / r[i]) ** 0.5 * 4)
+            hit = True
+            
             # Ball termination
             t[i] = 0
-        else :
-            # Punishing for misses
-            score -= 1
+    
+    # Punishing for misses
+    if not hit:
+        score -= 3
+        score = max(score, 0)
 
 
 # Collison types
