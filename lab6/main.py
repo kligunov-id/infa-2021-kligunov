@@ -52,7 +52,7 @@ def new_ball():
     x = randint(100, 1100)
     y = randint(100, 900)
     r = randint(10, 100)
-    t = randint(50, 80)
+    t = randint(150, 250)
     color = COLORS[randint(0, 5)]
     v_x = randint(-5, 5)
     v_y = randint(-5, 5)
@@ -182,9 +182,11 @@ while not finished:
             v_x[i], v_y[i] = generate_velocity(*collision_type)
 
     # Ball rendering
+    ball_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
     for i in range(N):
-        circle(screen, color[i], (x[i], y[i]), r[i])
-    
+        circle(ball_surface, (*color[i], t[i]), (x[i], y[i]), r[i])
+    screen.blit(ball_surface, (0, 0))
+
     # Score rendering
     textsurface = score_font.render(f"Score := {score}", True, BLACK)
     screen.blit(textsurface, (30, 10))
