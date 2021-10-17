@@ -37,11 +37,11 @@ x2, y2, phi = 10, 10, 0
 A, B = 60, 25 # Length and half width
 t2 = 0
 
-V2 = 6
+v2 = 5
+v_phi = 2 * pi / 60
 
-MOVING, TURNING = 'move', 'turn'
+MOVING, TURNING_LEFT, TURNING_RIGHT = 'move', 'left', 'right'
 state = MOVING
-
 move_t, turn_t = 30, 10
 
 def dist2(p, q):
@@ -78,15 +78,16 @@ def new_ball():
 
 def new_triangle():
     """
-    Randomly chooses position and orientation for the ball
+    Randomly chooses position, orientation and movement state for the ball
     
-    :returns: List (center_x, center_y, orientation, lifespan) 
+    :returns: List (center_x, center_y, orientation, state, lifespan) 
     """
     x = randint(MARGIN, WIDTH - MARGIN)
     y = randint(MARGIN, HEIGHT - MARGIN)
     t = 255
     phi = random() * 2 * pi
-    return (x, y, phi, t)
+    state = MOVING
+    return (x, y, phi, state, t)
 
 
 def move_triangle(x, y, v, phi, state):
@@ -105,11 +106,18 @@ def move_triangle(x, y, v, phi, state):
     """
     new_x, new_y, new_phi, new_state = x, y, phi, state
     if state == MOVING:
-        #new_x += v * cos(phi)
-        #new_y += v * sin(phi)
-        pass
-    else :
-        pass
+        new_x += v2 * cos(phi)
+        new_y += v2 * sin(phi)
+        if randint(0, move_t) == 0:
+            new_state = TURNING_LEFT if randint(0, 2) else TURNING_RIGHT
+    elif state == TURNING_LEFT:
+        new_phi += v_phi
+        if randint(0, turn_t) == 0:
+            new_state = MOVING
+    else:
+        new_phi -= v_phi
+        if randint(0, turn_t) == 0:
+            new_state = MOVING
     return (new_x, new_y, new_phi, new_state)
 
 
@@ -117,9 +125,16 @@ def check_triangle_click(click_pos, x, y, phi):
     """
     Checks if mouse click hit the triangle
 
-    :returns: True if the click hit, False otherwise
+    :returns: True if the click hits, False otherwise
     """
-    return False
+    # Get click position relative to the center of shortest side
+    x_click, y_click = click_pos
+    x_click -= x
+    y_click -= y
+    # Get vector in canonical basis(x axis towards vertice, y alongside shortest side) by rotation by -phi
+    x_click, y_click = cos(phi) * x_click + sin(phi) * y_click, - sin(phi) * x_click + cos(phi) * y_click
+    # Triangle is an intersection of x > 0, x + y > 0 and x - y > 0
+    return x_click > 0 and x_click / A + y_click / B <= 1 and x_click / A - y_click / B <= 1
 
 # Current game score
 score = 0
@@ -242,7 +257,7 @@ while not finished:
     t2 -= randint(0, 3)
     if t2 <= 0:
         # Creation of a new triangle
-        x2, y2, phi, t2 = new_triangle()
+        x2, y2, phi, state, t2 = new_triangle()
 
     # Ball movement
     for i in range(N):
@@ -250,7 +265,7 @@ while not finished:
         y[i] += v_y[i]
     
     # Triangle movement
-    x2, y2, phi, state = move_triangle(x2, y2, V2, phi, state)
+    x2, y2, phi, state = move_triangle(x2, y2, v2, phi, state)
 
     # Collision handling
     for i in range(N):
