@@ -33,15 +33,16 @@ x, y, v_x, v_y = [0] * N, [0] * N, [0] * N, [0] * N
 r, color, t = [0] * N, [BLACK] * N, [0] * N
 
 # Triangle characteristics
-x2, y2, phi = 10, 10, 0
+M = 2
+x2, y2, phi = [10] * M, [10] * M, [0] * M
 A, B = 60, 25 # Length and half width
-t2 = 0
+t2 = [0] * M
 
 v2 = 5
 v_phi = 2 * pi / 60
 
 MOVING, TURNING_LEFT, TURNING_RIGHT = 'move', 'left', 'right'
-state = MOVING
+state = [MOVING] * M
 move_t, turn_t = 30, 10
 
 def dist2(p, q):
@@ -158,11 +159,12 @@ def click(ClickEvent):
             
             # Ball termination
             t[i] = 0
-    if check_triangle_click(ClickEvent.pos, x2, y2, phi):
-        score += randint(5, 15)
-        hit = True
-        # Triangle termination
-        t2 = 0
+    for i in range(M):
+        if check_triangle_click(ClickEvent.pos, x2[i], y2[i], phi[i]):
+            score += randint(5, 25)
+            hit = True
+            # Triangle termination
+            t2[i] = 0
 
     # Punishing for misses
     if not hit:
@@ -253,11 +255,11 @@ while not finished:
         if t[i] <= 0:
             # Creation of a new ball
             x[i], y[i], v_x[i], v_y[i], r[i], color[i], t[i] = new_ball()
-    
-    t2 -= randint(0, 3)
-    if t2 <= 0:
-        # Creation of a new triangle
-        x2, y2, phi, state, t2 = new_triangle()
+    for i in range(M):
+        t2[i] -= randint(0, 3)
+        if t2[i] <= 0:
+            # Creation of a new triangle
+            x2[i], y2[i], phi[i], state[i], t2[i] = new_triangle()
 
     # Ball movement
     for i in range(N):
@@ -265,7 +267,8 @@ while not finished:
         y[i] += v_y[i]
     
     # Triangle movement
-    x2, y2, phi, state = move_triangle(x2, y2, v2, phi, state)
+    for i in range(M):
+        x2[i], y2[i], phi[i], state[i] = move_triangle(x2[i], y2[i], v2, phi[i], state[i])
 
     # Collision handling
     for i in range(N):
@@ -281,12 +284,13 @@ while not finished:
 
     # Triangle rendering
     trinagle_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    vertices = [
-                (A * cos(phi), A * sin(phi)),
-                (B * cos(phi + pi / 2), B * sin(phi + pi / 2)),
-                (B * cos(phi - pi / 2), B * sin(phi - pi / 2)),
-                ]
-    polygon(trinagle_surface, (*SPECIAL, t2), [(x2 + dx, y2 + dy) for dx, dy in vertices])
+    for i in range(M):
+        vertices = [
+                    (A * cos(phi[i]), A * sin(phi[i])),
+                    (B * cos(phi[i] + pi / 2), B * sin(phi[i] + pi / 2)),
+                    (B * cos(phi[i] - pi / 2), B * sin(phi[i] - pi / 2)),
+                   ]
+        polygon(trinagle_surface, (*SPECIAL, t2[i]), [(x2[i] + dx, y2[i] + dy) for dx, dy in vertices])
     screen.blit(trinagle_surface, (0, 0))
 
     # Score rendering
