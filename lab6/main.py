@@ -275,7 +275,9 @@ while not finished:
         collision_type = check_collision(r[i], x[i], y[i], v_x[i], v_y[i])
         if collision_type != (COLLISION_NONE, COLLISION_NONE):
             v_x[i], v_y[i] = generate_velocity(*collision_type)
-
+    for i in range(M):
+        if x2[i] < 0 or x2[i] > WIDTH or y2[i] < 0 or y2[i] > HEIGHT:
+            t2[i] = 0
     # Ball rendering
     ball_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
     for i in range(N):
