@@ -1,6 +1,7 @@
 import pygame
 from pygame.draw import *
-from random import randint
+from random import randint, random
+from math import pi, cos, sin
 
 # Game initialization
 pygame.init()
@@ -10,6 +11,7 @@ score_font = pygame.font.SysFont('JetBrains Mono',  30)
 
 FPS = 60
 WIDTH, HEIGHT = 1200, 900
+MARGIN = 100
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 # Colors
@@ -21,6 +23,7 @@ MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+SPECIAL = (0, 17, 102)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 # Ball characteristics
@@ -28,6 +31,18 @@ N = 5
 
 x, y, v_x, v_y = [0] * N, [0] * N, [0] * N, [0] * N
 r, color, t = [0] * N, [BLACK] * N, [0] * N
+
+# Triangle characteristics
+x2, y2, phi = 10, 10, 0
+A, B = 60, 25 # Length and half width
+t2 = 0
+
+V2 = 6
+
+MOVING, TURNING = 'move', 'turn'
+state = MOVING
+
+move_t, turn_t = 30, 10
 
 def dist2(p, q):
     """
@@ -61,6 +76,51 @@ def new_ball():
     return (x, y, v_x, v_y, r, color, t)
 
 
+def new_triangle():
+    """
+    Randomly chooses position and orientation for the ball
+    
+    :returns: List (center_x, center_y, orientation, lifespan) 
+    """
+    x = randint(MARGIN, WIDTH - MARGIN)
+    y = randint(MARGIN, HEIGHT - MARGIN)
+    t = 255
+    phi = random() * 2 * pi
+    return (x, y, phi, t)
+
+
+def move_triangle(x, y, v, phi, state):
+    """
+    Returns new state of the triangle
+    
+    :param x: X coordinate 
+    :param y: Y coordinate
+    :param v: Velocity
+    :param phi: Current orientation
+    :param state: Current state, either MOVING or TURNING
+    
+    :returns: List (new_x, new_y, new_phi, new_state)
+
+    ..warning: Mock function
+    """
+    new_x, new_y, new_phi, new_state = x, y, phi, state
+    if state == MOVING:
+        #new_x += v * cos(phi)
+        #new_y += v * sin(phi)
+        pass
+    else :
+        pass
+    return (new_x, new_y, new_phi, new_state)
+
+
+def check_triangle_click(click_pos, x, y, phi):
+    """
+    Checks if mouse click hit the triangle
+
+    :returns: True if the click hit, False otherwise
+    """
+    return False
+
 # Current game score
 score = 0
 
@@ -71,22 +131,24 @@ def click(ClickEvent):
 
     :param ClickEvent: Mouse event to be handled
     """
-    global t, score
+    global t, score, t2
 
     # Checking if we hit anything
-
     hit = False
     for i in range(N):
         if dist2(ClickEvent.pos, (x[i], y[i])) <= r[i] ** 2:
-            
-            # Score update:
-            # the smaller the ball and the faster it was clicked the better the score
+            # The smaller the ball and the faster it was clicked the better the score
             score += int((t[i] / r[i]) ** 0.5 * 4)
             hit = True
             
             # Ball termination
             t[i] = 0
-    
+    if check_triangle_click(ClickEvent.pos, x2, y2, phi):
+        score += randint(5, 15)
+        hit = True
+        # Triangle termination
+        t2 = 0
+
     # Punishing for misses
     if not hit:
         score -= 3
@@ -170,18 +232,26 @@ while not finished:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             click(event)
     
-    # Game engine
+    # Target lifespan management
     for i in range(N):
+        t[i] -= 1
         if t[i] <= 0:
             # Creation of a new ball
             x[i], y[i], v_x[i], v_y[i], r[i], color[i], t[i] = new_ball()
-        t[i] -= 1
+    
+    t2 -= randint(0, 3)
+    if t2 <= 0:
+        # Creation of a new triangle
+        x2, y2, phi, t2 = new_triangle()
 
     # Ball movement
     for i in range(N):
         x[i] += v_x[i]
         y[i] += v_y[i]
     
+    # Triangle movement
+    x2, y2, phi, state = move_triangle(x2, y2, V2, phi, state)
+
     # Collision handling
     for i in range(N):
         collision_type = check_collision(r[i], x[i], y[i], v_x[i], v_y[i])
@@ -193,6 +263,16 @@ while not finished:
     for i in range(N):
         circle(ball_surface, (*color[i], t[i]), (x[i], y[i]), r[i])
     screen.blit(ball_surface, (0, 0))
+
+    # Triangle rendering
+    trinagle_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    vertices = [
+                (A * cos(phi), A * sin(phi)),
+                (B * cos(phi + pi / 2), B * sin(phi + pi / 2)),
+                (B * cos(phi - pi / 2), B * sin(phi - pi / 2)),
+                ]
+    polygon(trinagle_surface, (*SPECIAL, t2), [(x2 + dx, y2 + dy) for dx, dy in vertices])
+    screen.blit(trinagle_surface, (0, 0))
 
     # Score rendering
     textsurface = score_font.render(f"Score := {score}", True, BLACK)
