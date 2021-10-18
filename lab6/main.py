@@ -26,25 +26,6 @@ BLACK = (0, 0, 0)
 SPECIAL = (0, 17, 102)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
-# Ball characteristics
-N = 5
-
-x, y, v_x, v_y = [0] * N, [0] * N, [0] * N, [0] * N
-r, color, t = [0] * N, [BLACK] * N, [0] * N
-
-# Triangle characteristics
-M = 2
-x2, y2, phi = [10] * M, [10] * M, [0] * M
-A, B = 60, 25 # Length and half width
-t2 = [0] * M
-
-v2 = 5
-v_phi = 2 * pi / 60
-
-MOVING, TURNING_LEFT, TURNING_RIGHT = 'move', 'left', 'right'
-state = [MOVING] * M
-move_t, turn_t = 30, 10
-
 def dist2(p, q):
     """
     Returns distance squared between points p and q
@@ -59,23 +40,130 @@ def dist2(p, q):
     return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
 
-MAXV = 4
+class Ball:
 
-def new_ball():
-    """
-    Randomly chooses position, velocity, radius and color for the ball
+    MAX_V = 4
+
+    # Collison types
+    COLLISION_NEGATIVE = -1 # Ball's too far to the left/top
+    COLLISION_NONE     = 0  # Ball's inside the walls
+    COLLISION_POSITIVE = 1  # Ball's too far to the right/bottom
+
+    def __init__(self):
+        """ Randomly choses position (x, y), velocity (v_x, v_y), color and life counter t """
+        self.x = randint(100, 1100)
+        self.y = randint(100, 900)
+        self.r = randint(30, 100)
+        self.t = randint(150, 250)
+        self.color = COLORS[randint(0, 5)]
+        self.v_x = randint(-Ball.MAX_V, Ball.MAX_V + 1)
+        self.v_y = randint(-Ball.MAX_V, Ball.MAX_V + 1)
     
-    :returns: List (center_x, center_y, velocity_x, velocity_y, radius, color, lifespan) 
-    """
-    x = randint(100, 1100)
-    y = randint(100, 900)
-    r = randint(30, 100)
-    t = randint(150, 250)
-    color = COLORS[randint(0, 5)]
-    v_x = randint(-MAXV, MAXV + 1)
-    v_y = randint(-MAXV, MAXV + 1)
-    return (x, y, v_x, v_y, r, color, t)
+    def reset(self):
+        """ Randomly choses position (x, y), velocity (v_x, v_y), color and life counter t """
+        self.x = randint(100, 1100)
+        self.y = randint(100, 900)
+        self.r = randint(30, 100)
+        self.t = randint(150, 250)
+        self.color = COLORS[randint(0, 5)]
+        self.v_x = randint(-Ball.MAX_V, Ball.MAX_V + 1)
+        self.v_y = randint(-Ball.MAX_V, Ball.MAX_V + 1)
 
+    def move(self):
+        self.x += self.v_x
+        self.y += self.v_y
+
+    def reduce_life_clock(self):
+        """ Reduces life clock (when it reaches 0, target is considered to be dead) """
+        self.t -= 1
+
+    def check_collision(self):
+        """
+        Determines if the ball hit the wall and returns collision type
+
+        :returns: List (x_type, y_type), where x_type and y_type are
+              one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
+        """
+        x_type = Ball.COLLISION_NONE
+        if self.x < self.r and self.v_x < 0:
+            x_type = Ball.COLLISION_NEGATIVE
+        elif self.x > WIDTH - self.r and self.v_x > 0:
+            x_type = Ball.COLLISION_POSITIVE
+    
+        y_type = Ball.COLLISION_NONE
+        if self.y < self.r and self.v_y < 0:
+            y_type = Ball.COLLISION_NEGATIVE
+        elif self.y > HEIGHT - self.r and self.v_y > 0:
+            y_type = Ball.COLLISION_POSITIVE
+
+        return (x_type, y_type)
+
+    def generate_velocity(self, x_type, y_type):
+        """
+        Generates random velocity for the ball after wall collision
+        After velocity generation ball will move away from the wall
+
+        :param x_type: Type of the collision with vertical walls,
+                   one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
+        :param y_type: Type of the collision with horizontal walls,
+                   one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
+         """
+        self.v_x = randint(-Ball.MAX_V, Ball.MAX_V + 1)
+        if x_type == Ball.COLLISION_NEGATIVE:
+            self.v_x = randint(1, Ball.MAX_V + 1)
+        elif x_type == Ball.COLLISION_POSITIVE:
+            self.v_x = randint(-Ball.MAX_V, 0)
+
+        self.v_y = randint(-Ball.MAX_V, Ball.MAX_V + 1)
+        if y_type == Ball.COLLISION_NEGATIVE:
+            self.v_y = randint(1, Ball.MAX_V + 1)
+        elif y_type == Ball.COLLISION_POSITIVE:
+            self.v_y = randint(-Ball.MAX_V, 0)
+
+    def is_clicked(self, pos):
+        """
+        Checks if mouse click hit the ball
+
+        :param pos: Mouse click position
+        :returns: True if the ball was hit, False otherwise
+        """
+        return dist2(pos, (self.x, self.y)) <= self.r ** 2
+    
+    def get_score(self):
+        """ Returns score awarded for successful hit """
+        return int((self.t / self.r) ** 0.5 * 4)
+    
+    def terminate(self):
+        """ Marks the ball as dead by setting life counter to zero """
+        self.t = 0
+
+    def is_dead(self):
+        """ Returns true if the ball should be removed """
+        return self.t <= 0
+    
+    def render(self, screen):
+        """
+        :param screen: PyGame screen to render ball on
+        """
+        if self.t <= 0:
+            print ("wtf")
+        circle(screen, (*self.color, self.t), (self.x, self.y), self.r)
+N = 5
+
+targets = [Ball() for _ in range(N)]
+
+# Triangle characteristics
+M = 2
+x2, y2, phi = [10] * M, [10] * M, [0] * M
+A, B = 60, 25 # Length and half width
+t2 = [0] * M
+
+v2 = 5
+v_phi = 2 * pi / 60
+
+MOVING, TURNING_LEFT, TURNING_RIGHT = 'move', 'left', 'right'
+state = [MOVING] * M
+move_t, turn_t = 30, 10
 
 def new_triangle():
     """
@@ -143,22 +231,19 @@ score = 0
 def click(ClickEvent):
     """
     Handles mouse clicks events
-    Clicked balls should disapper
+    Clicked targets should disapper
 
     :param ClickEvent: Mouse event to be handled
     """
-    global t, score, t2
+    global score, t2
 
     # Checking if we hit anything
     hit = False
-    for i in range(N):
-        if dist2(ClickEvent.pos, (x[i], y[i])) <= r[i] ** 2:
-            # The smaller the ball and the faster it was clicked the better the score
-            score += int((t[i] / r[i]) ** 0.5 * 4)
+    for ball in targets:
+        if ball.is_clicked(ClickEvent.pos):
+            score += ball.get_score()
+            ball.terminate()
             hit = True
-            
-            # Ball termination
-            t[i] = 0
     for i in range(M):
         if check_triangle_click(ClickEvent.pos, x2[i], y2[i], phi[i]):
             score += randint(5, 25)
@@ -170,67 +255,6 @@ def click(ClickEvent):
     if not hit:
         score -= 3
         score = max(score, 0)
-
-
-# Collison types
-COLLISION_NEGATIVE = -1 # Ball's too far to the left/top
-COLLISION_NONE     = 0  # Ball's inside the walls
-COLLISION_POSITIVE = 1  # Ball's too far to the right/bottom
-
-def check_collision(r, x, y, v_x, v_y):
-    """
-    Determines if the ball hit the wall and returns collision type
-
-    :param r: Radius of the ball
-    :param x: X coordinate of the ball
-    :param y: Y coordinate of the ball
-    :param v_x: X coordinate of the ball's velocity
-    :param v_y: Y coordinate of the ball's velocity
-
-    :returns: List (x_type, y_type), where x_type and y_type are
-              one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
-    """
-    x_type = COLLISION_NONE
-    if x < r and v_x < 0:
-        x_type = COLLISION_NEGATIVE
-    elif x > WIDTH - r and v_x > 0:
-        x_type = COLLISION_POSITIVE
-    
-    y_type = COLLISION_NONE
-    if y < r and v_y < 0:
-        y_type = COLLISION_NEGATIVE
-    elif y > HEIGHT - r and v_y > 0:
-        y_type = COLLISION_POSITIVE
-
-    return (x_type, y_type)
-
-
-def generate_velocity(x_type, y_type):
-    """
-    Generates random velocity for the ball after wall collision
-    After velocity generation ball will move away from the wall
-
-    :param x_type: Type of the collision with vertical walls,
-                   one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
-    :param y_type: Type of the collision with horizontal walls,
-                   one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
-
-    :returns: List (v_x, v_y) where v_x and v_y are projections of the new velocity
-                                                        onto the corresponding axis
-    """
-    v_x = randint(-MAXV, MAXV + 1)
-    if x_type == COLLISION_NEGATIVE:
-        v_x = randint(1, MAXV + 1)
-    elif x_type == COLLISION_POSITIVE:
-        v_x = randint(-MAXV, 0)
-
-    v_y = randint(-MAXV, MAXV + 1)
-    if y_type == COLLISION_NEGATIVE:
-        v_y = randint(1, MAXV + 1)
-    elif y_type == COLLISION_POSITIVE:
-        v_y = randint(-MAXV, 0)
-
-    return (v_x, v_y)
 
 
 # Pygame setup
@@ -249,12 +273,11 @@ while not finished:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             click(event)
     
-    # Target lifespan management
-    for i in range(N):
-        t[i] -= 1
-        if t[i] <= 0:
-            # Creation of a new ball
-            x[i], y[i], v_x[i], v_y[i], r[i], color[i], t[i] = new_ball()
+    for ball in targets:
+        ball.reduce_life_clock()
+        if ball.is_dead():
+            ball.reset()
+
     for i in range(M):
         t2[i] -= randint(0, 3)
         if t2[i] <= 0:
@@ -262,26 +285,26 @@ while not finished:
             x2[i], y2[i], phi[i], state[i], t2[i] = new_triangle()
 
     # Ball movement
-    for i in range(N):
-        x[i] += v_x[i]
-        y[i] += v_y[i]
+    for ball in targets:
+        ball.move()
     
     # Triangle movement
     for i in range(M):
         x2[i], y2[i], phi[i], state[i] = move_triangle(x2[i], y2[i], v2, phi[i], state[i])
 
     # Collision handling
-    for i in range(N):
-        collision_type = check_collision(r[i], x[i], y[i], v_x[i], v_y[i])
-        if collision_type != (COLLISION_NONE, COLLISION_NONE):
-            v_x[i], v_y[i] = generate_velocity(*collision_type)
+    for ball in targets:
+        collision_type = ball.check_collision()
+        if collision_type != (Ball.COLLISION_NONE, Ball.COLLISION_NONE):
+            ball.generate_velocity(*collision_type)
     for i in range(M):
         if x2[i] < 0 or x2[i] > WIDTH or y2[i] < 0 or y2[i] > HEIGHT:
             t2[i] = 0
+
     # Ball rendering
     ball_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    for i in range(N):
-        circle(ball_surface, (*color[i], t[i]), (x[i], y[i]), r[i])
+    for ball in targets:
+        ball.render(ball_surface)
     screen.blit(ball_surface, (0, 0))
 
     # Triangle rendering
