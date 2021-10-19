@@ -147,12 +147,7 @@ class Ball:
         """
         :param screen: PyGame screen to render ball on
         """
-        if self.t <= 0:
-            print ("wtf")
         circle(screen, (*self.color, self.t), (self.x, self.y), self.r)
-
-N = 5
-balls = [Ball() for _ in range(N)]
 
 class Triangle:
 
@@ -250,34 +245,64 @@ class Triangle:
         
         polygon(screen, self.get_color(), [(self.x + dx, self.y + dy) for dx, dy in vertices])
 
-M = 2
-triangles = [Triangle() for _ in range(M)]
+class GameSession:
 
-# Current game score
-score = 0
+    N, M = 5, 2
+    
+    def __init__(self):
+        self.balls = [Ball() for _ in range(GameSession.N)]
+        self.triangles = [Triangle() for _ in range(GameSession.M)]
+        self.score = 0
 
-def click(ClickEvent):
-    """
-    Handles mouse clicks events
-    Clicked targets should disapper
+    def handle_click(self, ClickEvent):
+        """
+        Handles mouse clicks events
+        Clicked targets should disapper
 
-    :param ClickEvent: Mouse event to be handled
-    """
-    global score
+        :param ClickEvent: Mouse event to be handled
+        """
+        
+        hit = 0
+        for target in self.balls + self.triangles:
+            if target.is_clicked(ClickEvent.pos):
+                self.score += target.get_score()
+                target.terminate()
+                hit += 1
 
-    # Checking if we hit anything
-    hit = False
-    for target in balls + triangles:
-        if target.is_clicked(ClickEvent.pos):
-            score += target.get_score()
-            target.terminate()
-            hit = True
+        # Punishing for misses
+        if not hit:
+            self.score -= 3
+            self.score = max(self.score, 0)
 
-    # Punishing for misses
-    if not hit:
-        score -= 3
-        score = max(score, 0)
+    def progress(self):
+        """ Moves targets, handles colissions, creates new targets """
+        for target in self.balls + self.triangles:
+            target.move()
+        
+        for ball in self.balls:
+            collision_type = ball.check_collision()
+            if collision_type != (Ball.COLLISION_NONE, Ball.COLLISION_NONE):
+                ball.generate_velocity(*collision_type)
+        for triangle in self.triangles:
+            if triangle.check_collision():
+                triangle.terminate()
 
+        for target in self.balls + self.triangles:
+            target.reduce_life_clock()
+            if target.is_dead():
+                target.reset()
+
+    def render(self, screen):
+        """ Renders all targets and the score
+        :param screen: PyGame screen to render on
+        """       
+        for target in self.balls + self.triangles:
+            target.render(screen)
+
+        textsurface = score_font.render(f"Score := {self.score}", True, BLACK)
+        screen.blit(textsurface, (30, 10))
+
+session = GameSession()
 
 # Pygame setup
 pygame.display.update()
@@ -293,34 +318,12 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            click(event)
+            session.handle_click(event)
+
+    session.progress()
     
-    for target in balls + triangles:
-        target.reduce_life_clock()
-        if target.is_dead():
-            target.reset()
 
-    for target in balls + triangles:
-        target.move()
-
-    # Collision handling
-    for ball in balls:
-        collision_type = ball.check_collision()
-        if collision_type != (Ball.COLLISION_NONE, Ball.COLLISION_NONE):
-            ball.generate_velocity(*collision_type)
-    for triangle in triangles:
-        if triangle.check_collision():
-            triangle.terminate()
-
-    # Target rendering
-    target_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    for target in balls + triangles:
-        target.render(target_surface)
-    screen.blit(target_surface, (0, 0))
-
-    # Score rendering
-    textsurface = score_font.render(f"Score := {score}", True, BLACK)
-    screen.blit(textsurface, (30, 10))
+    session.render(screen)
 
     # Display update
     pygame.display.update()
