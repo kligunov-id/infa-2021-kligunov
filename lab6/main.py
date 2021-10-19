@@ -111,15 +111,15 @@ class Ball:
                    one of the {COLLISION_NEGATIVE, COLLISION_NONE, COLLISION_POTIVE}
          """
         self.v_x = randint(-Ball.MAX_V, Ball.MAX_V + 1)
-        if x_type == Ball.COLLISION_NEGATIVE:
+        if x_type is Ball.COLLISION_NEGATIVE:
             self.v_x = randint(1, Ball.MAX_V + 1)
-        elif x_type == Ball.COLLISION_POSITIVE:
+        elif x_type is Ball.COLLISION_POSITIVE:
             self.v_x = randint(-Ball.MAX_V, 0)
 
         self.v_y = randint(-Ball.MAX_V, Ball.MAX_V + 1)
-        if y_type == Ball.COLLISION_NEGATIVE:
+        if y_type is Ball.COLLISION_NEGATIVE:
             self.v_y = randint(1, Ball.MAX_V + 1)
-        elif y_type == Ball.COLLISION_POSITIVE:
+        elif y_type is Ball.COLLISION_POSITIVE:
             self.v_y = randint(-Ball.MAX_V, 0)
 
     def is_clicked(self, pos):
