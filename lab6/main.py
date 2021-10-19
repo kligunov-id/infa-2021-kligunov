@@ -321,9 +321,10 @@ while not finished:
             session.handle_click(event)
 
     session.progress()
-    
 
-    session.render(screen)
+    session_screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    session.render(session_screen)
+    screen.blit(session_screen, (0, 0))
 
     # Display update
     pygame.display.update()
