@@ -51,8 +51,8 @@ class Ball:
 
     def __init__(self):
         """ Randomly choses position (x, y), velocity (v_x, v_y), color and life counter t """
-        self.x = randint(100, 1100)
-        self.y = randint(100, 900)
+        self.x = randint(MARGIN, WIDTH - MARGIN)
+        self.y = randint(MARGIN, HEIGHT - MARGIN)
         self.r = randint(30, 100)
         self.t = randint(150, 250)
         self.color = COLORS[randint(0, 5)]
@@ -61,8 +61,8 @@ class Ball:
     
     def reset(self):
         """ Randomly choses position (x, y), velocity (v_x, v_y), color and life counter t """
-        self.x = randint(100, 1100)
-        self.y = randint(100, 900)
+        self.x = randint(MARGIN, WIDTH - MARGIN)
+        self.y = randint(MARGIN, HEIGHT - MARGIN)
         self.r = randint(30, 100)
         self.t = randint(150, 250)
         self.color = COLORS[randint(0, 5)]
@@ -74,7 +74,9 @@ class Ball:
         self.y += self.v_y
 
     def reduce_life_clock(self):
-        """ Reduces life clock (when it reaches 0, target is considered to be dead) """
+        """ Reduces life clock
+        When it reaches 0, target is considered to be dead
+        """
         self.t -= 1
 
     def check_collision(self):
@@ -130,15 +132,15 @@ class Ball:
         return dist2(pos, (self.x, self.y)) <= self.r ** 2
     
     def get_score(self):
-        """ Returns score awarded for successful hit """
+        """ Returns score awarded for a successful hit """
         return int((self.t / self.r) ** 0.5 * 4)
     
     def terminate(self):
-        """ Marks the ball as dead by setting life counter to zero """
+        """ Marks the ball as dead """
         self.t = 0
 
     def is_dead(self):
-        """ Returns true if the ball should be removed """
+        """ Returns True if the ball should be removed """
         return self.t <= 0
     
     def render(self, screen):
@@ -148,82 +150,108 @@ class Ball:
         if self.t <= 0:
             print ("wtf")
         circle(screen, (*self.color, self.t), (self.x, self.y), self.r)
+
 N = 5
+balls = [Ball() for _ in range(N)]
 
-targets = [Ball() for _ in range(N)]
+class Triangle:
 
-# Triangle characteristics
+    MOVING, TURNING_LEFT, TURNING_RIGHT = 'move', 'left', 'right'
+    move_t, turn_t = 30, 10 # Average duration of movement states
+    
+    v_phi = 2 * pi / 60
+    v = 5
+    
+    A, B = 60, 25 # Length and half width
+
+    def __init__(self):
+        """" Randomly chooses position and orientation for the ball """
+        self.x = randint(MARGIN, WIDTH - MARGIN)
+        self.y = randint(MARGIN, HEIGHT - MARGIN)
+        self.t = 255
+        self.phi = random() * 2 * pi
+        self.state = Triangle.MOVING
+
+    def reset(self):
+        self.x = randint(MARGIN, WIDTH - MARGIN)
+        self.y = randint(MARGIN, HEIGHT - MARGIN)
+        self.t = 255
+        self.phi = random() * 2 * pi
+        self.state = Triangle.MOVING
+
+    def move(self):
+        if self.state is Triangle.MOVING:
+            self.x += Triangle.v * cos(self.phi)
+            self.y += Triangle.v * sin(self.phi)
+            if randint(0, Triangle.move_t) == 0:
+                self.state = Triangle.TURNING_LEFT if randint(0, 2) else Triangle.TURNING_RIGHT
+        elif self.state is Triangle.TURNING_LEFT:
+            self.phi += Triangle.v_phi
+            if randint(0, Triangle.turn_t) == 0:
+                self.state = Triangle.MOVING
+        else:
+            self.phi -= Triangle.v_phi
+            if randint(0, Triangle.turn_t) == 0:
+                self.state = Triangle.MOVING
+
+    def reduce_life_clock(self):
+        """ Reduces life clock
+        When it reaches 0, target is considered to be dead
+        """
+        self.t -= randint(0, 3)
+    
+    def is_dead(self):
+        """ Returns True if the ball should be removed """
+        return self.t <= 0
+
+    def terminate(self):
+        """ Marks the ball as dead """
+        self.t = 0
+
+    def check_collision(self):
+        """ Return True if triangle (almost) hit the wall """
+        return self.x < 0 or self.x > WIDTH or self.y < 0 or self.y > HEIGHT
+
+    def is_clicked(self, pos):
+        """
+        Checks if mouse click hit the ball
+
+        :param pos: Mouse click position
+        :returns: True if the ball was hit, False otherwise
+        """
+        click_x, click_y = pos
+        click_x -= self.x
+        click_y -= self.y
+        """ Get vector in canonical basis
+        (x axis towards vertice, y alongside shortest side)
+        by rotation by -phi
+        """
+        click_x = cos(self.phi) * click_x + sin(self.phi) * click_y
+        click_y = -sin(self.phi) * click_x + sin(self.phi) * click_y
+        # Triangle is an intersection of x > 0, x + y > 0 and x - y > 0
+        return click_x > 0 and click_x / Triangle.A + click_y / Triangle.B <= 1 and click_x / Triangle.A - click_y / Triangle.B <= 1
+    
+    def get_score(self):
+        """ Returns score awarded for a successful hit """
+        return randint(5, 25)
+    
+    def get_color(self):
+        transparency = max(0, self.t)
+        return (*SPECIAL, transparency)
+
+    def render(self, screen):
+        """
+        :param screen: PyGame screen to render ball on
+        """
+        vertices_r = [Triangle.A, Triangle.B, Triangle.B]
+        vertices_phi = [self.phi, self.phi + pi / 2, self.phi - pi / 2]
+
+        vertices = [(r * cos(phi), r * sin(phi)) for r, phi in zip(vertices_r, vertices_phi)]
+        
+        polygon(screen, self.get_color(), [(self.x + dx, self.y + dy) for dx, dy in vertices])
+
 M = 2
-x2, y2, phi = [10] * M, [10] * M, [0] * M
-A, B = 60, 25 # Length and half width
-t2 = [0] * M
-
-v2 = 5
-v_phi = 2 * pi / 60
-
-MOVING, TURNING_LEFT, TURNING_RIGHT = 'move', 'left', 'right'
-state = [MOVING] * M
-move_t, turn_t = 30, 10
-
-def new_triangle():
-    """
-    Randomly chooses position, orientation and movement state for the ball
-    
-    :returns: List (center_x, center_y, orientation, state, lifespan) 
-    """
-    x = randint(MARGIN, WIDTH - MARGIN)
-    y = randint(MARGIN, HEIGHT - MARGIN)
-    t = 255
-    phi = random() * 2 * pi
-    state = MOVING
-    return (x, y, phi, state, t)
-
-
-def move_triangle(x, y, v, phi, state):
-    """
-    Returns new state of the triangle
-    
-    :param x: X coordinate 
-    :param y: Y coordinate
-    :param v: Velocity
-    :param phi: Current orientation
-    :param state: Current state, either MOVING or TURNING
-    
-    :returns: List (new_x, new_y, new_phi, new_state)
-
-    ..warning: Mock function
-    """
-    new_x, new_y, new_phi, new_state = x, y, phi, state
-    if state == MOVING:
-        new_x += v2 * cos(phi)
-        new_y += v2 * sin(phi)
-        if randint(0, move_t) == 0:
-            new_state = TURNING_LEFT if randint(0, 2) else TURNING_RIGHT
-    elif state == TURNING_LEFT:
-        new_phi += v_phi
-        if randint(0, turn_t) == 0:
-            new_state = MOVING
-    else:
-        new_phi -= v_phi
-        if randint(0, turn_t) == 0:
-            new_state = MOVING
-    return (new_x, new_y, new_phi, new_state)
-
-
-def check_triangle_click(click_pos, x, y, phi):
-    """
-    Checks if mouse click hit the triangle
-
-    :returns: True if the click hits, False otherwise
-    """
-    # Get click position relative to the center of shortest side
-    x_click, y_click = click_pos
-    x_click -= x
-    y_click -= y
-    # Get vector in canonical basis(x axis towards vertice, y alongside shortest side) by rotation by -phi
-    x_click, y_click = cos(phi) * x_click + sin(phi) * y_click, - sin(phi) * x_click + cos(phi) * y_click
-    # Triangle is an intersection of x > 0, x + y > 0 and x - y > 0
-    return x_click > 0 and x_click / A + y_click / B <= 1 and x_click / A - y_click / B <= 1
+triangles = [Triangle() for _ in range(M)]
 
 # Current game score
 score = 0
@@ -235,21 +263,15 @@ def click(ClickEvent):
 
     :param ClickEvent: Mouse event to be handled
     """
-    global score, t2
+    global score
 
     # Checking if we hit anything
     hit = False
-    for ball in targets:
-        if ball.is_clicked(ClickEvent.pos):
-            score += ball.get_score()
-            ball.terminate()
+    for target in balls + triangles:
+        if target.is_clicked(ClickEvent.pos):
+            score += target.get_score()
+            target.terminate()
             hit = True
-    for i in range(M):
-        if check_triangle_click(ClickEvent.pos, x2[i], y2[i], phi[i]):
-            score += randint(5, 25)
-            hit = True
-            # Triangle termination
-            t2[i] = 0
 
     # Punishing for misses
     if not hit:
@@ -273,50 +295,28 @@ while not finished:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             click(event)
     
-    for ball in targets:
-        ball.reduce_life_clock()
-        if ball.is_dead():
-            ball.reset()
+    for target in balls + triangles:
+        target.reduce_life_clock()
+        if target.is_dead():
+            target.reset()
 
-    for i in range(M):
-        t2[i] -= randint(0, 3)
-        if t2[i] <= 0:
-            # Creation of a new triangle
-            x2[i], y2[i], phi[i], state[i], t2[i] = new_triangle()
-
-    # Ball movement
-    for ball in targets:
-        ball.move()
-    
-    # Triangle movement
-    for i in range(M):
-        x2[i], y2[i], phi[i], state[i] = move_triangle(x2[i], y2[i], v2, phi[i], state[i])
+    for target in balls + triangles:
+        target.move()
 
     # Collision handling
-    for ball in targets:
+    for ball in balls:
         collision_type = ball.check_collision()
         if collision_type != (Ball.COLLISION_NONE, Ball.COLLISION_NONE):
             ball.generate_velocity(*collision_type)
-    for i in range(M):
-        if x2[i] < 0 or x2[i] > WIDTH or y2[i] < 0 or y2[i] > HEIGHT:
-            t2[i] = 0
+    for triangle in triangles:
+        if triangle.check_collision():
+            triangle.terminate()
 
-    # Ball rendering
-    ball_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    for ball in targets:
-        ball.render(ball_surface)
-    screen.blit(ball_surface, (0, 0))
-
-    # Triangle rendering
-    trinagle_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    for i in range(M):
-        vertices = [
-                    (A * cos(phi[i]), A * sin(phi[i])),
-                    (B * cos(phi[i] + pi / 2), B * sin(phi[i] + pi / 2)),
-                    (B * cos(phi[i] - pi / 2), B * sin(phi[i] - pi / 2)),
-                   ]
-        polygon(trinagle_surface, (*SPECIAL, t2[i]), [(x2[i] + dx, y2[i] + dy) for dx, dy in vertices])
-    screen.blit(trinagle_surface, (0, 0))
+    # Target rendering
+    target_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    for target in balls + triangles:
+        target.render(target_surface)
+    screen.blit(target_surface, (0, 0))
 
     # Score rendering
     textsurface = score_font.render(f"Score := {score}", True, BLACK)
