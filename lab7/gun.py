@@ -22,6 +22,9 @@ HEIGHT = 600
 
 
 class Ball:
+    g = 1
+    dt = 0.6
+
     def __init__(self, screen: pygame.Surface, x=40, y=450):
         """ Конструктор класса ball
 
@@ -45,9 +48,23 @@ class Ball:
         self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
         и стен по краям окна (размер окна 800х600).
         """
-        # FIXME
-        self.x += self.vx
-        self.y -= self.vy
+        self.x += self.vx * Ball.dt
+        self.y -= self.vy * Ball.dt - Ball.g * Ball.dt * Ball.dt / 2
+        self.vy -= Ball.g * Ball.dt
+        
+        # Drag
+        self.vy *= 0.99
+        self.vx *= 0.99
+
+        # Collision handling
+        if self.x < 0 and self.vx < 0:
+            self.vx *= -1
+        if self.y < 0 and self.vy > 0:
+            self.vy *= -1
+        if self.x > WIDTH and self.vx > 0:
+            self.vx *= -1
+        if self.y > HEIGHT and self.vy < 0 and not self.is_dead():
+            self.vy *= -1
 
     def draw(self):
         pygame.draw.circle(
@@ -67,6 +84,9 @@ class Ball:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
         return (self.x - obj.x) ** 2 + (self.y - obj.y) ** 2 <= (self.r + obj.r) ** 2
+
+    def is_dead(self):
+        return (self.vy ** 2 + self.vx ** 2) < 200  or self.y > HEIGHT + 20
 
 class Gun:
     def __init__(self, screen):
@@ -99,7 +119,7 @@ class Gun:
     def targetting(self, event):
         """Прицеливание. Зависит от положения мыши."""
         if event:
-            self.an = math.atan((event.pos[1]-450) / (event.pos[0]-20))
+            self.an = math.atan((event.pos[1]-450) / max((event.pos[0]-20), .0000001))
         if self.f2_on:
             self.color = RED
         else:
