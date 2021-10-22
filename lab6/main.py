@@ -51,13 +51,7 @@ class Ball:
 
     def __init__(self):
         """ Randomly choses position (x, y), velocity (v_x, v_y), color and life counter t """
-        self.x = randint(MARGIN, WIDTH - MARGIN)
-        self.y = randint(MARGIN, HEIGHT - MARGIN)
-        self.r = randint(30, 100)
-        self.t = randint(150, 250)
-        self.color = COLORS[randint(0, 5)]
-        self.v_x = randint(-Ball.MAX_V, Ball.MAX_V + 1)
-        self.v_y = randint(-Ball.MAX_V, Ball.MAX_V + 1)
+        self.reset()
     
     def reset(self):
         """ Randomly choses position (x, y), velocity (v_x, v_y), color and life counter t """
@@ -161,13 +155,10 @@ class Triangle:
 
     def __init__(self):
         """" Randomly chooses position and orientation for the ball """
-        self.x = randint(MARGIN, WIDTH - MARGIN)
-        self.y = randint(MARGIN, HEIGHT - MARGIN)
-        self.t = 255
-        self.phi = random() * 2 * pi
-        self.state = Triangle.MOVING
+        self.reset()
 
     def reset(self):
+        """" Randomly chooses position and orientation for the ball """
         self.x = randint(MARGIN, WIDTH - MARGIN)
         self.y = randint(MARGIN, HEIGHT - MARGIN)
         self.t = 255
