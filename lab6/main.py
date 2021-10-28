@@ -239,16 +239,16 @@ class GameSession:
         self.triangles = [Triangle() for _ in range(GameSession.M)]
         self.score = 0
 
-    def handle_click(self, ClickEvent):
+    def handle_click(self, pos):
         """
         Handles mouse clicks events
         Clicked targets should disapper
 
-        :param ClickEvent: Mouse event to be handled
+        :param pos: Position (x, y) of mouse click
         """
         hit = 0
         for target in self.balls + self.triangles:
-            if target.is_clicked(ClickEvent.pos):
+            if target.is_clicked(pos):
                 self.score += target.get_score()
                 target.terminate()
                 hit += 1
@@ -288,39 +288,61 @@ class GameSession:
         screen.blit(textsurface, (30, 10))
 
 
+class Game:
+
+    STATE_PLAYING = "play"
+    STATE_FINISHED = "finished"
+    
+    def __init__(self):
+        self.state = Game.STATE_PLAYING
+        self.game_session = GameSession()
+        self.score_font = pygame.font.SysFont('JetBrains Mono',  30)
+    
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.game_session.handle_click(event.pos)
+
+    def progress(self):
+        self.game_session.progress()
+
+    def render(self):
+        """
+        :returns: PyGame screen
+        """
+        screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        self.game_session.render(screen, self.score_font)
+        return screen
+
+
 def main():
     # Initialize PyGame, clock and GameSession
     pygame.init()
     pygame.font.init()
 
-    score_font = pygame.font.SysFont('JetBrains Mono',  30)
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    session = GameSession()
+    
+    game = Game()
     clock = pygame.time.Clock()
     finished = False
-    
+
     # Main cycle
     while not finished:
         clock.tick(FPS)
-    
         # Handles events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 finished = True
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                session.handle_click(event)
+            else :
+                game.handle_event(event)
 
-        session.progress()
+        game.progress()
         
         # Renders game
-        session_screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        session.render(session_screen, score_font)
-        screen.blit(session_screen, (0, 0))
+        screen.blit(game.render(), (0, 0))
 
         # Updates screen
         pygame.display.update()
         screen.fill(WHITE)
-
     pygame.quit()
 
 
