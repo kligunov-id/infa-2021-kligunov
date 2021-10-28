@@ -135,6 +135,7 @@ class Ball:
         """
         circle(screen, (*self.color, self.t), (self.x, self.y), self.r)
 
+
 class Triangle:
 
     MOVING, TURNING_LEFT, TURNING_RIGHT = 'move', 'left', 'right'
@@ -228,6 +229,7 @@ class Triangle:
         
         polygon(screen, self.get_color(), [(self.x + dx, self.y + dy) for dx, dy in vertices])
 
+
 class GameSession:
 
     N, M = 5, 2
@@ -244,7 +246,6 @@ class GameSession:
 
         :param ClickEvent: Mouse event to be handled
         """
-        
         hit = 0
         for target in self.balls + self.triangles:
             if target.is_clicked(ClickEvent.pos):
@@ -288,7 +289,7 @@ class GameSession:
 
 
 def main():
-    # Game initialization
+    # Initialize PyGame, clock and GameSession
     pygame.init()
     pygame.font.init()
 
@@ -297,12 +298,12 @@ def main():
     session = GameSession()
     clock = pygame.time.Clock()
     finished = False
-
+    
     # Main cycle
     while not finished:
         clock.tick(FPS)
     
-        # Event handling
+        # Handles events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 finished = True
@@ -311,12 +312,12 @@ def main():
 
         session.progress()
         
-        # Rendering
+        # Renders game
         session_screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         session.render(session_screen, score_font)
         screen.blit(session_screen, (0, 0))
 
-        # Display update
+        # Updates screen
         pygame.display.update()
         screen.fill(WHITE)
 
