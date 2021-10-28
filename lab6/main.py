@@ -3,18 +3,10 @@ from pygame.draw import *
 from random import randint, random
 from math import pi, cos, sin
 
-# Game initialization
-pygame.init()
-
-pygame.font.init()
-score_font = pygame.font.SysFont('JetBrains Mono',  30)
-
 FPS = 60
 WIDTH, HEIGHT = 1200, 900
 MARGIN = 100
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-# Colors
 RED  = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
@@ -283,9 +275,10 @@ class GameSession:
             if target.is_dead():
                 target.reset()
 
-    def render(self, screen):
+    def render(self, screen, score_font):
         """ Renders all targets and the score
         :param screen: PyGame screen to render on
+        :score_font: PyGame font to use for score rendering
         """       
         for target in self.balls + self.triangles:
             target.render(screen)
@@ -293,32 +286,41 @@ class GameSession:
         textsurface = score_font.render(f"Score := {self.score}", True, BLACK)
         screen.blit(textsurface, (30, 10))
 
-session = GameSession()
 
-# Pygame setup
-pygame.display.update()
-clock = pygame.time.Clock()
-finished = False
+def main():
+    # Game initialization
+    pygame.init()
+    pygame.font.init()
 
-# Main cycle
-while not finished:
-    clock.tick(FPS)
+    score_font = pygame.font.SysFont('JetBrains Mono',  30)
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    session = GameSession()
+    clock = pygame.time.Clock()
+    finished = False
+
+    # Main cycle
+    while not finished:
+        clock.tick(FPS)
     
-    # Event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            finished = True
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            session.handle_click(event)
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                session.handle_click(event)
 
-    session.progress()
+        session.progress()
+        
+        # Rendering
+        session_screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        session.render(session_screen, score_font)
+        screen.blit(session_screen, (0, 0))
 
-    session_screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    session.render(session_screen)
-    screen.blit(session_screen, (0, 0))
+        # Display update
+        pygame.display.update()
+        screen.fill(WHITE)
 
-    # Display update
-    pygame.display.update()
-    screen.fill(WHITE)
+    pygame.quit()
 
-pygame.quit()
+
+main()
