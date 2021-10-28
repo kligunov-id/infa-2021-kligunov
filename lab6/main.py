@@ -129,11 +129,12 @@ class Ball:
         """ Returns True if the ball should be removed """
         return self.t <= 0
     
-    def render(self, screen):
+    def render(self, screen, transparency_factor = 1):
         """
         :param screen: PyGame screen to render ball on
+        :param transparency_factor: Multiplies transparency by this
         """
-        circle(screen, (*self.color, self.t), (self.x, self.y), self.r)
+        circle(screen, (*self.color, int(self.t * transparency_factor)), (self.x, self.y), self.r)
 
 
 class Triangle:
@@ -214,30 +215,39 @@ class Triangle:
         """ Returns score awarded for a successful hit """
         return randint(5, 25)
     
-    def get_color(self):
-        transparency = max(0, self.t)
+    def get_color(self, transparency_factor = 1):
+        """
+        :param transparency_factor: Multiplies transparency by this
+        :returns: (R, G, B, A) color of triangle
+        """
+        transparency = max(0, self.t * transparency_factor)
         return (*SPECIAL, transparency)
 
-    def render(self, screen):
+    def render(self, screen, transparency_factor = 1):
         """
         :param screen: PyGame screen to render ball on
+        :param transparency_factor: Multiplies transparency by this
         """
         vertices_r = [Triangle.A, Triangle.B, Triangle.B]
         vertices_phi = [self.phi, self.phi + pi / 2, self.phi - pi / 2]
 
         vertices = [(r * cos(phi), r * sin(phi)) for r, phi in zip(vertices_r, vertices_phi)]
         
-        polygon(screen, self.get_color(), [(self.x + dx, self.y + dy) for dx, dy in vertices])
+        polygon(screen,
+            self.get_color(transparency_factor),
+            [(self.x + dx, self.y + dy) for dx, dy in vertices])
 
 
 class GameSession:
 
     N, M = 5, 2
+    T = 2 * FPS
     
     def __init__(self):
         self.balls = [Ball() for _ in range(GameSession.N)]
         self.triangles = [Triangle() for _ in range(GameSession.M)]
         self.score = 0
+        self.time = self.T
 
     def handle_click(self, pos):
         """
@@ -259,7 +269,9 @@ class GameSession:
             self.score = max(self.score, 0)
 
     def progress(self):
-        """ Moves targets, handles colissions, creates new targets """
+        """ Moves targets, handles colissions and creates new targets """
+        self.time -= 1
+
         for target in self.balls + self.triangles:
             target.move()
         
@@ -276,22 +288,29 @@ class GameSession:
             if target.is_dead():
                 target.reset()
 
-    def render(self, screen, score_font):
-        """ Renders all targets and the score
+    def render(self, screen, font, render_text=True, transparency_factor=1):
+        """ Renders all targets, the score and the timer
         :param screen: PyGame screen to render on
-        :score_font: PyGame font to use for score rendering
+        :font: PyGame font to use for score rendering
+        :param render_text: True if requested to render score and timer
         """       
         for target in self.balls + self.triangles:
-            target.render(screen)
+            target.render(screen, transparency_factor)
 
-        textsurface = score_font.render(f"Score := {self.score}", True, BLACK)
-        screen.blit(textsurface, (30, 10))
-
+        if render_text:
+            score_surface = font.render(f"Score := {self.score}", True, BLACK)
+            timer_surface = font.render(f"Time left := {self.time}", True, BLACK)
+            screen.blit(score_surface, (30, 10))
+            screen.blit(timer_surface, (30, 50))
+    
+    def is_finished(self):
+        return self.time <= 0
 
 class Game:
 
     STATE_PLAYING = "play"
     STATE_FINISHED = "finished"
+    FINISHED_GAME_TRANSPARENCY = 0.15
     
     def __init__(self):
         self.state = Game.STATE_PLAYING
@@ -300,17 +319,23 @@ class Game:
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            self.game_session.handle_click(event.pos)
+            if self.state is Game.STATE_PLAYING:
+                self.game_session.handle_click(event.pos)
 
     def progress(self):
         self.game_session.progress()
+        if self.game_session.is_finished():
+            self.state = Game.STATE_FINISHED
 
     def render(self):
         """
         :returns: PyGame screen
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        self.game_session.render(screen, self.score_font)
+        if self.state is Game.STATE_PLAYING:
+            self.game_session.render(screen, self.score_font)
+        elif self.state is Game.STATE_FINISHED:
+            self.game_session.render(screen, self.score_font, False, Game.FINISHED_GAME_TRANSPARENCY)
         return screen
 
 
