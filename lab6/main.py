@@ -90,6 +90,7 @@ class Game:
 
     STATE_PLAYING = "play"
     STATE_FINISHED = "finished"
+    STATE_MENU = "menu"
     FINISHED_GAME_TRANSPARENCY = 0.15
 
     @staticmethod
@@ -98,22 +99,31 @@ class Game:
 
     def __init__(self):
         Game.__instance = self
-        self.state = Game.STATE_PLAYING
+        self.state = Game.STATE_MENU
         self.game_session = GameSession()
         self.game_over_screen = GameOverScreen()
+        self.menu = Menu() 
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state is Game.STATE_PLAYING:
                 self.game_session.handle_click(event.pos)
-            if self.state is Game.STATE_FINISHED:
+            elif self.state is Game.STATE_FINISHED:
                 self.game_over_screen.handle_click(event.pos)
+            elif self.state is Game.STATE_MENU:
+                self.menu.handle_click(event.pos)
 
     def progress(self):
-        self.game_session.progress()
-        if self.game_session.is_finished():
-            self.set_state(Game.STATE_FINISHED)
+        if self.state is Game.STATE_MENU:
+            self.menu.progress()
+        elif self.state is Game.STATE_PLAYING:
+            self.game_session.progress()
+        else:
+            self.game_session.progress()
             self.game_over_screen.progress()
+        
+        if self.game_session.is_finished() and self.state is Game.STATE_PLAYING:
+            self.set_state(Game.STATE_FINISHED)
 
     def render(self):
         """
@@ -125,6 +135,8 @@ class Game:
         elif self.state is Game.STATE_FINISHED:
             self.game_session.render(screen, False, Game.FINISHED_GAME_TRANSPARENCY)
             self.game_over_screen.render(screen)
+        elif self.state is Game.STATE_MENU:
+            self.menu.render(screen)
         return screen
 
     def set_state(self, new_state):
@@ -144,7 +156,7 @@ class GameOverScreen:
 
     def __init__(self):
         self.font = pygame.font.SysFont(FONT_NAME,  GameOverScreen.FONTSIZE)
-        self.restart_button = Button("Play again", (WIDTH / 2, HEIGHT * 0.3)) 
+        self.restart_button = Button("Back to menu", (WIDTH / 2, HEIGHT * 0.3)) 
 
     def render(self, screen: pygame.Surface):
         text_surface_1 = self.font.render(f"Game Over", True, BLACK)
@@ -165,10 +177,39 @@ class GameOverScreen:
         :param pos: Position (x, y) of mouse click
         """
         if self.restart_button.is_mouse_on(pos):
-            Game.get_instance().set_state(Game.STATE_PLAYING)
+            Game.get_instance().set_state(Game.STATE_MENU)
     
     def progress(self):
         self.restart_button.progress()
+
+
+class Menu:
+
+    FONTSIZE = 50
+    
+    def __init__(self):
+        self.font = pygame.font.SysFont(FONT_NAME,  GameOverScreen.FONTSIZE)
+        self.start_button = Button("New Game", (WIDTH / 2, HEIGHT * 0.3))
+
+    def render(self, screen: pygame.Surface):
+        text_surface = self.font.render(f"<Abstract_Name>", True, BLACK)
+        text_rect = text_surface.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.07)))
+        screen.blit(text_surface, text_rect)
+
+        self.start_button.render(screen)
+    
+    def handle_click(self, pos):
+        """
+        Handles mouse clicks events
+        Restarts game when restart button is clicked
+
+        :param pos: Position (x, y) of mouse click
+        """
+        if self.start_button.is_mouse_on(pos):
+            Game.get_instance().set_state(Game.STATE_PLAYING)
+    
+    def progress(self):
+        self.start_button.progress()
 
 
 def main():
