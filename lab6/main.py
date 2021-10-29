@@ -34,6 +34,35 @@ def dist2(p, q):
     return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
 
+class Button:
+
+    FONTSIZE_SMALL = 60
+    FONTSIZE_BIG = 80
+
+    def __init__(self, text, center):
+        self.fontsize = Button.FONTSIZE_SMALL
+        self.font = pygame.font.SysFont(FONT_NAME, self.fontsize)
+        self.text_surface = self.font.render(text, True, BLACK)
+        self.text_rect = self.text_surface.get_rect(center = center)
+
+    def render(self, screen: pygame.Surface):
+        screen.blit(self.text_surface, self.text_rect)
+    
+
+    def update_text(self, text=""):
+        pass
+
+    def progress(self, text):
+        pass 
+
+    def is_mouse_on(self, pos):
+        """ Checks if mouse is hovering on button
+        :param pos: Mouse position (x, y)
+        """
+        x, y = pos
+        return (self.text_rect.left <= x and x <= self.text_rect.right 
+            and self.text_rect.top <= y and y <= self.text_rect.bottom)
+
 class Ball:
 
     MAX_V = 4
@@ -305,7 +334,7 @@ class GameSession:
             timer_surface = self.font.render(f"Time left := {self.time // FPS}", True, BLACK)
             screen.blit(score_surface, (30, 10))
             screen.blit(timer_surface, (30, 50))
-    
+
     def is_finished(self):
         return self.time <= 0
 
@@ -332,6 +361,8 @@ class Game:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state is Game.STATE_PLAYING:
                 self.game_session.handle_click(event.pos)
+            if self.state is Game.STATE_FINISHED:
+                self.game_over_screen.handle_click(event.pos)
 
     def progress(self):
         self.game_session.progress()
@@ -355,7 +386,8 @@ class Game:
             return
         self.state = new_state
         if new_state is Game.STATE_PLAYING:
-            game_session = GameSession()
+            self.game_session = GameSession()
+            print(0)
     
     def get_score(self):
         return self.game_session.score
@@ -366,7 +398,8 @@ class GameOverScreen:
 
     def __init__(self):
         self.font = pygame.font.SysFont(FONT_NAME,  GameOverScreen.FONTSIZE)
-        
+        self.restart_button = Button("Play again", (WIDTH / 2, HEIGHT * 0.3)) 
+
     def render(self, screen: pygame.Surface):
         text_surface_1 = self.font.render(f"Game Over", True, BLACK)
         text_rect_1 = text_surface_1.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.07)))
@@ -375,6 +408,18 @@ class GameOverScreen:
         text_surface_2 = self.font.render(f"Your score is {Game.get_instance().get_score()}", True, BLACK)
         text_rect_2 = text_surface_2.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.15)))
         screen.blit(text_surface_2, text_rect_2)
+
+        self.restart_button.render(screen)
+    
+    def handle_click(self, pos):
+        """
+        Handles mouse clicks events
+        Restarts game when restart button is clicked
+
+        :param pos: Position (x, y) of mouse click
+        """
+        if self.restart_button.is_mouse_on(pos):
+            Game.get_instance().set_state(Game.STATE_PLAYING)
 
 def main():
     # Initialize PyGame, clock and GameSession
