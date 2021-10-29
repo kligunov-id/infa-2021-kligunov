@@ -302,7 +302,7 @@ class GameSession:
 
         if render_text:
             score_surface = self.font.render(f"Score := {self.score}", True, BLACK)
-            timer_surface = self.font.render(f"Time left := {self.time}", True, BLACK)
+            timer_surface = self.font.render(f"Time left := {self.time // FPS}", True, BLACK)
             screen.blit(score_surface, (30, 10))
             screen.blit(timer_surface, (30, 50))
     
@@ -356,20 +356,25 @@ class Game:
         self.state = new_state
         if new_state is Game.STATE_PLAYING:
             game_session = GameSession()
-
+    
+    def get_score(self):
+        return self.game_session.score
 
 class GameOverScreen:
     
     FONTSIZE = 50
 
     def __init__(self):
-        self.font = pygame.font.SysFont(FONT_NAME,  60)
+        self.font = pygame.font.SysFont(FONT_NAME,  GameOverScreen.FONTSIZE)
         
     def render(self, screen: pygame.Surface):
         text_surface_1 = self.font.render(f"Game Over", True, BLACK)
-        text_surface_2 = self.font.render(f"Your score is {1}", True, BLACK)
-        screen.blit(text_surface_1, (20, 20))
-        screen.blit(text_surface_2, (20, 80))
+        text_rect_1 = text_surface_1.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.07)))
+        screen.blit(text_surface_1, text_rect_1)
+        
+        text_surface_2 = self.font.render(f"Your score is {Game.get_instance().get_score()}", True, BLACK)
+        text_rect_2 = text_surface_2.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.15)))
+        screen.blit(text_surface_2, text_rect_2)
 
 def main():
     # Initialize PyGame, clock and GameSession
