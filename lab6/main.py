@@ -37,23 +37,36 @@ def dist2(p, q):
 class Button:
 
     FONTSIZE_SMALL = 60
-    FONTSIZE_BIG = 80
+    FONTSIZE_BIG = 70
+    ANIMATION_SPEED = 0.8
 
     def __init__(self, text, center):
+        self.center = center
         self.fontsize = Button.FONTSIZE_SMALL
-        self.font = pygame.font.SysFont(FONT_NAME, self.fontsize)
-        self.text_surface = self.font.render(text, True, BLACK)
-        self.text_rect = self.text_surface.get_rect(center = center)
+        self.update_text(text)
 
     def render(self, screen: pygame.Surface):
         screen.blit(self.text_surface, self.text_rect)
     
-
     def update_text(self, text=""):
-        pass
+        """ Redraws button with new fontsize and (optionaly) text
+        :param text: New text
+        """
+        if text:
+            self.text = text
+        self.font = pygame.font.SysFont(FONT_NAME, int(self.fontsize))
+        self.text_surface = self.font.render(self.text, True, BLACK)
+        self.text_rect = self.text_surface.get_rect(center = self.center)
 
-    def progress(self, text):
-        pass 
+    def progress(self):
+        """ Animates button """
+        if self.is_mouse_on(pygame.mouse.get_pos()):
+            self.fontsize += Button.ANIMATION_SPEED
+        else:
+            self.fontsize -= Button.ANIMATION_SPEED
+        self.fontsize = max(Button.FONTSIZE_SMALL, self.fontsize)
+        self.fontsize = min(Button.FONTSIZE_BIG, self.fontsize)
+        self.update_text()
 
     def is_mouse_on(self, pos):
         """ Checks if mouse is hovering on button
@@ -368,6 +381,7 @@ class Game:
         self.game_session.progress()
         if self.game_session.is_finished():
             self.set_state(Game.STATE_FINISHED)
+            self.game_over_screen.progress()
 
     def render(self):
         """
@@ -387,7 +401,6 @@ class Game:
         self.state = new_state
         if new_state is Game.STATE_PLAYING:
             self.game_session = GameSession()
-            print(0)
     
     def get_score(self):
         return self.game_session.score
@@ -420,6 +433,9 @@ class GameOverScreen:
         """
         if self.restart_button.is_mouse_on(pos):
             Game.get_instance().set_state(Game.STATE_PLAYING)
+    
+    def progress(self):
+        self.restart_button.progress()
 
 def main():
     # Initialize PyGame, clock and GameSession
