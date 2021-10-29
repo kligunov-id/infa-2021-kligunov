@@ -18,6 +18,8 @@ BLACK = (0, 0, 0)
 SPECIAL = (0, 17, 102)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
+FONT_NAME = "JetBrains Mono"
+
 def dist2(p, q):
     """
     Returns distance squared between points p and q
@@ -248,6 +250,7 @@ class GameSession:
         self.triangles = [Triangle() for _ in range(GameSession.M)]
         self.score = 0
         self.time = self.T
+        self.font = pygame.font.SysFont(FONT_NAME,  30)
 
     def handle_click(self, pos):
         """
@@ -288,23 +291,24 @@ class GameSession:
             if target.is_dead():
                 target.reset()
 
-    def render(self, screen, font, render_text=True, transparency_factor=1):
+    def render(self, screen, render_text=True, transparency_factor=1):
         """ Renders all targets, the score and the timer
         :param screen: PyGame screen to render on
-        :font: PyGame font to use for score rendering
         :param render_text: True if requested to render score and timer
+        :pararm transparency_factor: Multiplies transparency
         """       
         for target in self.balls + self.triangles:
             target.render(screen, transparency_factor)
 
         if render_text:
-            score_surface = font.render(f"Score := {self.score}", True, BLACK)
-            timer_surface = font.render(f"Time left := {self.time}", True, BLACK)
+            score_surface = self.font.render(f"Score := {self.score}", True, BLACK)
+            timer_surface = self.font.render(f"Time left := {self.time}", True, BLACK)
             screen.blit(score_surface, (30, 10))
             screen.blit(timer_surface, (30, 50))
     
     def is_finished(self):
         return self.time <= 0
+
 
 class Game:
 
@@ -315,8 +319,8 @@ class Game:
     def __init__(self):
         self.state = Game.STATE_PLAYING
         self.game_session = GameSession()
-        self.score_font = pygame.font.SysFont('JetBrains Mono',  30)
-    
+        self.game_over_screen = GameOverScreen()
+
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state is Game.STATE_PLAYING:
@@ -325,7 +329,7 @@ class Game:
     def progress(self):
         self.game_session.progress()
         if self.game_session.is_finished():
-            self.state = Game.STATE_FINISHED
+            self.set_state(Game.STATE_FINISHED)
 
     def render(self):
         """
@@ -333,11 +337,32 @@ class Game:
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         if self.state is Game.STATE_PLAYING:
-            self.game_session.render(screen, self.score_font)
+            self.game_session.render(screen)
         elif self.state is Game.STATE_FINISHED:
-            self.game_session.render(screen, self.score_font, False, Game.FINISHED_GAME_TRANSPARENCY)
+            self.game_session.render(screen, False, Game.FINISHED_GAME_TRANSPARENCY)
+            self.game_over_screen.render(screen)
         return screen
 
+    def set_state(self, new_state):
+        if new_state is self.state:
+            return
+        self.state = new_state
+        if new_state is Game.STATE_PLAYING:
+            game_session = GameSession()
+
+
+class GameOverScreen:
+    
+    FONTSIZE = 50
+
+    def __init__(self):
+        self.font = pygame.font.SysFont(FONT_NAME,  60)
+        
+    def render(self, screen: pygame.Surface):
+        text_surface_1 = self.font.render(f"Game Over", True, BLACK)
+        text_surface_2 = self.font.render(f"Your score is {1}", True, BLACK)
+        screen.blit(text_surface_1, (20, 20))
+        screen.blit(text_surface_2, (20, 80))
 
 def main():
     # Initialize PyGame, clock and GameSession
