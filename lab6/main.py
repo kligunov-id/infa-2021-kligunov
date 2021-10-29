@@ -312,11 +312,18 @@ class GameSession:
 
 class Game:
 
+    __instance = None
+
     STATE_PLAYING = "play"
     STATE_FINISHED = "finished"
     FINISHED_GAME_TRANSPARENCY = 0.15
-    
+
+    @staticmethod
+    def get_instance():
+        return Game.__instance
+
     def __init__(self):
+        Game.__instance = self
         self.state = Game.STATE_PLAYING
         self.game_session = GameSession()
         self.game_over_screen = GameOverScreen()
