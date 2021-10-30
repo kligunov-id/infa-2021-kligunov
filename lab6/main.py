@@ -4,6 +4,7 @@ from random import randint, random
 from math import pi, cos, sin
 from button import *
 from targets import Ball, Triangle
+import json
 
 FPS = 60
 WIDTH, HEIGHT = 1200, 900
@@ -13,6 +14,25 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 FONT_NAME = "JetBrains Mono"
+
+class Config:
+
+    def __init__(self):
+        self.data = json.load(open("config.json"))
+        GameSession.N = self.data["GameSession"]["N"]
+        GameSession.M = self.data["GameSession"]["M"]
+        GameSession.T = self.data["GameSession"]["Session_Time"]
+
+    def set_difficulty(self, difficulty):
+        Ball.MAX_V = self.data["Ball"]["MAX_V"][difficulty]
+        Ball.MIN_R = self.data["Ball"]["MIN_R"][difficulty]
+        Ball.MAX_R = self.data["Ball"]["MAX_R"][difficulty]
+        Ball.MAX_V = self.data["Ball"]["MAX_V"][difficulty]
+        Ball.DIFFICULTY_SCORE_FACTOR = self.data["Ball"]["DIFFICULTY_SCORE_FACTOR"][difficulty]
+
+        Triangle.DIFFICULTY_SCORE_FACTOR = self.data["Triangle"]["DIFFICULTY_SCORE_FACTOR"][difficulty]
+        Triangle.v = self.data["Triangle"]["v"][difficulty]
+        Triangle.v_phi = self.data["Triangle"]["v_phi"][difficulty]
 
 class GameSession:
 
@@ -91,7 +111,12 @@ class Game:
     STATE_PLAYING = "play"
     STATE_FINISHED = "finished"
     STATE_MENU = "menu"
+
     FINISHED_GAME_TRANSPARENCY = 0.15
+
+    SOFTCORE = "Softcore"
+    MEDIUMCORE = "Mediumcore"
+    HARDCORE = "Hardcore"
 
     @staticmethod
     def get_instance():
@@ -99,6 +124,7 @@ class Game:
 
     def __init__(self):
         Game.__instance = self
+        self.config = Config()
         self.state = Game.STATE_MENU
         self.game_session = GameSession()
         self.game_over_screen = GameOverScreen()
@@ -145,10 +171,12 @@ class Game:
         self.state = new_state
         if new_state is Game.STATE_PLAYING:
             self.game_session = GameSession()
-    
+
     def get_score(self):
         return self.game_session.score
 
+    def set_difficulty(self, difficulty):
+        self.config.set_difficulty(difficulty)
 
 class GameOverScreen:
     
@@ -168,7 +196,7 @@ class GameOverScreen:
         screen.blit(text_surface_2, text_rect_2)
 
         self.restart_button.render(screen)
-    
+
     def handle_click(self, pos):
         """
         Handles mouse clicks events
@@ -186,10 +214,15 @@ class GameOverScreen:
 class Menu:
 
     FONTSIZE = 50
-    
+    DIFFICULTIES = [Game.SOFTCORE, Game.MEDIUMCORE, Game.HARDCORE]
+
     def __init__(self):
         self.font = pygame.font.SysFont(FONT_NAME,  GameOverScreen.FONTSIZE)
         self.start_button = Button("New Game", (WIDTH / 2, HEIGHT * 0.3))
+
+        self.difficulty_i = 1
+        self.difficulty_button = Button(Game.MEDIUMCORE, (WIDTH / 2, HEIGHT * 0.4))
+        Game.get_instance().set_difficulty(Game.MEDIUMCORE)
 
     def render(self, screen: pygame.Surface):
         text_surface = self.font.render(f"<Abstract_Name>", True, BLACK)
@@ -197,6 +230,7 @@ class Menu:
         screen.blit(text_surface, text_rect)
 
         self.start_button.render(screen)
+        self.difficulty_button.render(screen)
     
     def handle_click(self, pos):
         """
@@ -207,10 +241,14 @@ class Menu:
         """
         if self.start_button.is_mouse_on(pos):
             Game.get_instance().set_state(Game.STATE_PLAYING)
+        if self.difficulty_button.is_mouse_on(pos):
+            self.difficulty_i = (self.difficulty_i + 1) % 3
+            Game.get_instance().set_difficulty(Menu.DIFFICULTIES[self.difficulty_i])
+            self.difficulty_button.update_text(Menu.DIFFICULTIES[self.difficulty_i])
     
     def progress(self):
         self.start_button.progress()
-
+        self.difficulty_button.progress()
 
 def main():
     # Initialize PyGame, clock and GameSession

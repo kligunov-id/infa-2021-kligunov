@@ -1,0 +1,46 @@
+{
+    "Ball": {
+        "MAX_V": {
+            "Softcore": 3,
+            "Mediumcore": 4,
+            "Hardcore": 5
+        },
+        "MIN_R": {
+            "Softcore": 70,
+            "Mediumcore": 30,
+            "Hardcore": 30
+        },
+        "MAX_R": {
+            "Softcore": 100,
+            "Mediumcore": 100,
+            "Hardcore": 70
+        },
+        "DIFFICULTY_SCORE_FACTOR": {
+            "Softcore": 0.5,
+            "Mediumcore": 1,
+            "Hardcore": 1.5
+        }
+    },
+    "Triangle": {
+        "v": {
+            "Softcore": 4,
+            "Mediumcore": 5,
+            "Hardcore": 6
+        },
+        "v_phi": {
+            "Softcore": 0.09424777960769379,
+            "Mediumcore": 0.10471975511965977,
+            "Hardcore": 0.1256637061435917
+        },
+        "DIFFICULTY_SCORE_FACTOR": {
+            "Softcore": 0.5,
+            "Mediumcore": 1,
+            "Hardcore": 1.5
+        }
+    },
+    "GameSession": {
+        "N": 5,
+        "M": 2,
+        "Session_Time": 400
+    }
+}

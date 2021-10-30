@@ -35,6 +35,9 @@ def dist2(p, q):
 class Ball:
 
     MAX_V = 4
+    MIN_R = 30
+    MAX_R = 100
+    DIFFICULTY_SCORE_FACTOR = 1
 
     # Collison types
     COLLISION_NEGATIVE = -1 # Ball's too far to the left/top
@@ -49,7 +52,7 @@ class Ball:
         """ Randomly choses position (x, y), velocity (v_x, v_y), color and life counter t """
         self.x = randint(MARGIN, WIDTH - MARGIN)
         self.y = randint(MARGIN, HEIGHT - MARGIN)
-        self.r = randint(30, 100)
+        self.r = randint(Ball.MIN_R, Ball.MAX_R)
         self.t = randint(150, 250)
         self.color = COLORS[randint(0, 5)]
         self.v_x = randint(-Ball.MAX_V, Ball.MAX_V + 1)
@@ -119,7 +122,8 @@ class Ball:
     
     def get_score(self):
         """ Returns score awarded for a successful hit """
-        return int((self.t / self.r) ** 0.5 * 4)
+        return int((self.t / self.r) ** 0.5 * 4
+            * Ball.DIFFICULTY_SCORE_FACTOR)
     
     def terminate(self):
         """ Marks the ball as dead """
@@ -134,7 +138,9 @@ class Ball:
         :param screen: PyGame screen to render ball on
         :param transparency_factor: Multiplies transparency by this
         """
-        circle(screen, (*self.color, int(self.t * transparency_factor)), (self.x, self.y), self.r)
+        circle(screen,
+            (*self.color, int(self.t * transparency_factor)),
+            (self.x, self.y), self.r)
 
 
 class Triangle:
