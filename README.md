@@ -6,10 +6,15 @@ This is a repository for MIPT's programming course
 
 Simple project on drawing basics in PyGame
 
-## lab6
+## lab_6_7
 
-Basic PyGame where you should click colored circles on the screen
+Basic PyGame where you should click different targets on the screen
 
-## lab7
+## lab8
 
-"Cannon" PyGame project
+"Cannon" PyGame project. 
+_Not finished_
+
+## lab9
+
+_Not started_
