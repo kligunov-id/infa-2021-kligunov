@@ -117,7 +117,8 @@ class Game:
     SOFTCORE = "Softcore"
     MEDIUMCORE = "Mediumcore"
     HARDCORE = "Hardcore"
-
+    
+    INITIAL_NAME = "Philip II"
     @staticmethod
     def get_instance():
         return Game.__instance
@@ -128,7 +129,8 @@ class Game:
         self.state = Game.STATE_MENU
         self.game_session = GameSession()
         self.game_over_screen = GameOverScreen()
-        self.menu = Menu() 
+        self.menu = Menu()
+        self.player_name = Game.INITIAL_NAME
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -138,6 +140,10 @@ class Game:
                 self.game_over_screen.handle_click(event.pos)
             elif self.state is Game.STATE_MENU:
                 self.menu.handle_click(event.pos)
+
+        if event.type == pygame.KEYDOWN:
+            if self.state is Game.STATE_MENU:
+                self.menu.handle_keystroke(event)
 
     def progress(self):
         if self.state is Game.STATE_MENU:
@@ -187,7 +193,7 @@ class GameOverScreen:
         self.restart_button = Button("Back to menu", (WIDTH / 2, HEIGHT * 0.3)) 
 
     def render(self, screen: pygame.Surface):
-        text_surface_1 = self.font.render(f"Game Over", True, BLACK)
+        text_surface_1 = self.font.render(f"Game over, {Game.get_instance().player_name}", True, BLACK)
         text_rect_1 = text_surface_1.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.07)))
         screen.blit(text_surface_1, text_rect_1)
         
@@ -225,8 +231,18 @@ class Menu:
         self.difficulty_button = Button(Game.MEDIUMCORE, (WIDTH / 2, HEIGHT * 0.4))
         Game.get_instance().set_difficulty(Game.MEDIUMCORE)
         
-        self.quit_button = Button("Quit", (WIDTH / 2, HEIGHT * 0.5))
+        self.waiting_for_input = False
+        self.change_name_button = Button(
+            f"Player: {Game.INITIAL_NAME}",
+            (WIDTH / 2, HEIGHT * 0.5))
 
+        self.quit_button = Button("Quit", (WIDTH / 2, HEIGHT * 0.6))
+        
+        self.non_adaptive_buttons = [
+            self.start_button,
+            self.difficulty_button,
+            self.quit_button,
+        ]
 
     def render(self, screen: pygame.Surface):
         text_surface = self.font.render(f"<Abstract_Name>", True, BLACK)
@@ -236,6 +252,7 @@ class Menu:
         self.start_button.render(screen)
         self.difficulty_button.render(screen)
         self.quit_button.render(screen)
+        self.change_name_button.render(screen)
 
     def handle_click(self, pos):
         """
@@ -244,19 +261,45 @@ class Menu:
 
         :param pos: Position (x, y) of mouse click
         """
-        if self.start_button.is_mouse_on(pos):
-            Game.get_instance().set_state(Game.STATE_PLAYING)
-        elif self.difficulty_button.is_mouse_on(pos):
-            self.difficulty_i = (self.difficulty_i + 1) % 3
-            Game.get_instance().set_difficulty(Menu.DIFFICULTIES[self.difficulty_i])
-            self.difficulty_button.update_text(Menu.DIFFICULTIES[self.difficulty_i])
-        elif self.quit_button.is_mouse_on(pos):
-            pygame.event.post(pygame.event.Event(pygame.QUIT))
-    
+        if not self.waiting_for_input:
+            if self.start_button.is_mouse_on(pos):
+                Game.get_instance().set_state(Game.STATE_PLAYING)
+            elif self.difficulty_button.is_mouse_on(pos):
+                self.difficulty_i = (self.difficulty_i + 1) % 3
+                Game.get_instance().set_difficulty(Menu.DIFFICULTIES[self.difficulty_i])
+                self.difficulty_button.update_text(Menu.DIFFICULTIES[self.difficulty_i])
+            elif self.quit_button.is_mouse_on(pos):
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
+            elif self.change_name_button.is_mouse_on(pos):
+                self.waiting_for_input = True
+
+                for button in self.non_adaptive_buttons:
+                    button.fontsize = Button.FONTSIZE_SMALL
+                    button.update_text()
+
+                self.change_name_button.fontsize = Button.FONTSIZE_BIG
+                self.change_name_button.update_text()
+        else:
+            self.waiting_for_input = False
+
+    def handle_keystroke(self, event):
+        if not self.waiting_for_input:
+            return
+        if event.key == pygame.K_RETURN:
+            self.waiting_for_input = False
+        if event.key == pygame.K_BACKSPACE:
+            Game.get_instance().player_name = Game.get_instance().player_name[:-1]
+        if (event.unicode.isprintable()
+            and len(Game.get_instance().player_name) < 15):
+            Game.get_instance().player_name += event.unicode
+
     def progress(self):
-        self.start_button.progress()
-        self.difficulty_button.progress()
-        self.quit_button.progress()
+        if not self.waiting_for_input:
+            for button in self.non_adaptive_buttons:
+                button.progress()
+            self.change_name_button.progress()
+        else:
+            self.change_name_button.update_text(f"Player: {Game.get_instance().player_name}")
 
 def main():
     # Initialize PyGame, clock and GameSession
