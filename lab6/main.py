@@ -218,11 +218,15 @@ class Menu:
 
     def __init__(self):
         self.font = pygame.font.SysFont(FONT_NAME,  GameOverScreen.FONTSIZE)
+        
         self.start_button = Button("New Game", (WIDTH / 2, HEIGHT * 0.3))
 
         self.difficulty_i = 1
         self.difficulty_button = Button(Game.MEDIUMCORE, (WIDTH / 2, HEIGHT * 0.4))
         Game.get_instance().set_difficulty(Game.MEDIUMCORE)
+        
+        self.quit_button = Button("Quit", (WIDTH / 2, HEIGHT * 0.5))
+
 
     def render(self, screen: pygame.Surface):
         text_surface = self.font.render(f"<Abstract_Name>", True, BLACK)
@@ -231,7 +235,8 @@ class Menu:
 
         self.start_button.render(screen)
         self.difficulty_button.render(screen)
-    
+        self.quit_button.render(screen)
+
     def handle_click(self, pos):
         """
         Handles mouse clicks events
@@ -241,14 +246,17 @@ class Menu:
         """
         if self.start_button.is_mouse_on(pos):
             Game.get_instance().set_state(Game.STATE_PLAYING)
-        if self.difficulty_button.is_mouse_on(pos):
+        elif self.difficulty_button.is_mouse_on(pos):
             self.difficulty_i = (self.difficulty_i + 1) % 3
             Game.get_instance().set_difficulty(Menu.DIFFICULTIES[self.difficulty_i])
             self.difficulty_button.update_text(Menu.DIFFICULTIES[self.difficulty_i])
+        elif self.quit_button.is_mouse_on(pos):
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
     
     def progress(self):
         self.start_button.progress()
         self.difficulty_button.progress()
+        self.quit_button.progress()
 
 def main():
     # Initialize PyGame, clock and GameSession
