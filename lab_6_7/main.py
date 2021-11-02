@@ -13,7 +13,7 @@ MARGIN = 100
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-FONT_NAME = "JetBrains Mono"
+FONT_NAME = "JetBrainsMono"
 
 class Config:
 
@@ -57,7 +57,7 @@ class Leaderboard:
     def render(self):
         """ Returns PyGame surface with leaderboard """
         screen = pygame.Surface((WIDTH, HEIGHT * 0.8), pygame.SRCALPHA)
-        font = pygame.font.SysFont(FONT_NAME, 47)
+        font = pygame.font.Font(FONT_NAME, 47)
         text = ["Leaderboard"]
         for i in range(5):
             text += [f"{i + 1} {self.data[i][1]} {self.data[i][0]}"]
@@ -78,7 +78,7 @@ class GameSession:
         self.triangles = [Triangle() for _ in range(GameSession.M)]
         self.score = 0
         self.time = self.T
-        self.font = pygame.font.SysFont(FONT_NAME,  30)
+        self.font = pygame.font.Font(FONT_NAME,  30)
 
     def handle_click(self, pos):
         """
@@ -226,7 +226,7 @@ class GameOverScreen:
     FONTSIZE = 50
 
     def __init__(self):
-        self.font = pygame.font.SysFont(FONT_NAME,  GameOverScreen.FONTSIZE)
+        self.font = pygame.font.Font(FONT_NAME,  GameOverScreen.FONTSIZE)
         self.restart_button = Button("Back to menu", (WIDTH / 2, HEIGHT * 0.85)) 
 
     def render(self, screen: pygame.Surface):
@@ -260,7 +260,7 @@ class Menu:
     DIFFICULTIES = [Game.SOFTCORE, Game.MEDIUMCORE, Game.HARDCORE]
 
     def __init__(self):
-        self.font = pygame.font.SysFont(FONT_NAME,  GameOverScreen.FONTSIZE)
+        self.font = pygame.font.Font(FONT_NAME,  GameOverScreen.FONTSIZE)
         
         self.start_button = Button("New Game", (WIDTH / 2, HEIGHT * 0.3))
 

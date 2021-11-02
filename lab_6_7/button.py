@@ -5,7 +5,7 @@ class Button:
     FONTSIZE_SMALL = 60
     FONTSIZE_BIG = 70
     ANIMATION_SPEED = 0.8
-    FONT_NAME = "JetBrains Mono"
+    FONT_NAME = "JetBrainsMono"
     COLOR = (0, 0, 0)
 
     def __init__(self, text, center):
@@ -22,7 +22,7 @@ class Button:
         """
         if text:
             self.text = text
-        self.font = pygame.font.SysFont(Button.FONT_NAME, int(self.fontsize))
+        self.font = pygame.font.Font(Button.FONT_NAME, int(self.fontsize))
         self.text_surface = self.font.render(self.text, True, Button.COLOR)
         self.text_rect = self.text_surface.get_rect(center = self.center)
 
