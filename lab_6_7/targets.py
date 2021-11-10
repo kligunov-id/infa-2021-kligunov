@@ -59,6 +59,7 @@ class Ball:
         self.v_y = randint(-Ball.MAX_V, Ball.MAX_V + 1)
 
     def move(self):
+        """ Calculates new position (x, y) """
         self.x += self.v_x
         self.y += self.v_y
 
@@ -166,6 +167,7 @@ class Triangle:
         self.state = Triangle.MOVING
 
     def move(self):
+        """ Calculates new position (x, y), movement phase state and orientaion phi """
         if self.state is Triangle.MOVING:
             self.x += Triangle.v * cos(self.phi)
             self.y += Triangle.v * sin(self.phi)
