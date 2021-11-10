@@ -422,4 +422,5 @@ def main():
     pygame.quit()
     game.leaderboard.save()
 
-main()
+if __name__ == "__main__":
+    main()
