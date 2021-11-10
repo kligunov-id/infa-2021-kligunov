@@ -18,12 +18,17 @@ FONT_NAME = "JetBrainsMono"
 class Config:
 
     def __init__(self):
+        """ Initializes config with data from config.json file and sets GameSession parameters """
         self.data = json.load(open("config.json"))
         GameSession.N = self.data["GameSession"]["N"]
         GameSession.M = self.data["GameSession"]["M"]
         GameSession.T = self.data["GameSession"]["Session_Time"]
 
     def set_difficulty(self, difficulty):
+        """ Sets new difficulty
+        :param difficulty: New difficulty value, one of the 
+             {Game.SOFTCORE, Game.MEDIUMCORE, Game.HARDCORE}
+        """
         Ball.MAX_V = self.data["Ball"]["MAX_V"][difficulty]
         Ball.MIN_R = self.data["Ball"]["MIN_R"][difficulty]
         Ball.MAX_R = self.data["Ball"]["MAX_R"][difficulty]
@@ -37,25 +42,33 @@ class Config:
 class Leaderboard:
 
     def __init__(self):
+        """ Initializes leaderboard with data from leaderboard.json file """
         self.data = json.load(open("leaderboard.json"))
         self.data = sorted(self.data, key = lambda a: -int(a[0]))
 
     
     def save(self):
+        """ Saves data to leaderboard.json file """
         json.dump(self.data, open("leaderboard.json", "w"), indent = 4)
 
     def add(self, name, score):
+        """ Adds new result to leaderboard
+        :param name: Player name
+        :param score: Player result
+        """
+        # Makes sure that names and the score have fixed lengths 
         while len(name) < 15:
             name += " "
-
         score = str(score)
         while(len(score) < 4):
             score = " " + score
+        # Sortes leaderboard and keeps only top 5 results
         self.data = sorted(self.data + [(score, name)], key = lambda a: -int(a[0]))
         self.data = self.data[:-1]
     
     def render(self):
-        """ Returns PyGame surface with leaderboard """
+        """
+        :returns: pygame.Surface with leaderboard rendered on it """
         screen = pygame.Surface((WIDTH, HEIGHT * 0.8), pygame.SRCALPHA)
         font = pygame.font.Font(FONT_NAME, 47)
         text = ["Leaderboard"]
@@ -74,6 +87,7 @@ class GameSession:
     T = 2 * FPS
     
     def __init__(self):
+        """ Initializes game session with targets, resets score and time """
         self.balls = [Ball() for _ in range(GameSession.N)]
         self.triangles = [Triangle() for _ in range(GameSession.M)]
         self.score = 0
@@ -135,6 +149,8 @@ class GameSession:
             screen.blit(timer_surface, (30, 50))
 
     def is_finished(self):
+        """
+        :returns: True if game session is over, False otherwise"""
         return self.time <= 0
 
 
@@ -158,6 +174,13 @@ class Game:
         return Game.__instance
 
     def __init__(self):
+        """ Initializes all game elements:
+            * Config
+            * Leaderboard
+            * Session
+            * Menu
+            * game over screen
+        """
         Game.__instance = self
         self.config = Config()
         self.state = Game.STATE_MENU
@@ -168,6 +191,10 @@ class Game:
         self.leaderboard = Leaderboard()
 
     def handle_event(self, event):
+        """ Handles events
+        :param event: pygame.Event to be handled
+        """
+        # Passes mouse click events to active game element
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state is Game.STATE_PLAYING:
                 self.game_session.handle_click(event.pos)
@@ -175,12 +202,13 @@ class Game:
                 self.game_over_screen.handle_click(event.pos)
             elif self.state is Game.STATE_MENU:
                 self.menu.handle_click(event.pos)
-
+        # Handles keyboard input
         if event.type == pygame.KEYDOWN:
             if self.state is Game.STATE_MENU:
                 self.menu.handle_keystroke(event)
 
     def progress(self):
+        """ Moves models and animations by one step """
         if self.state is Game.STATE_MENU:
             self.menu.progress()
         elif self.state is Game.STATE_PLAYING:
@@ -194,7 +222,7 @@ class Game:
 
     def render(self):
         """
-        :returns: PyGame screen
+        :returns: PyGame screen with the whole game
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         if self.state is Game.STATE_PLAYING:
@@ -208,6 +236,9 @@ class Game:
         return screen
 
     def set_state(self, new_state):
+        """ Changes active game element
+        :param new_state: New active game element, one of the {STATE_PLAYING, STATE_FINISHED, STATE_MENU}
+        """
         if new_state is self.state:
             return
         self.state = new_state
@@ -215,10 +246,17 @@ class Game:
             self.game_session = GameSession()
         if new_state is Game.STATE_FINISHED:
             self.leaderboard.add(self.player_name, self.game_session.score)
+
     def get_score(self):
+        """ Returns the score gained during last game session
+        :returns: Score"""
         return self.game_session.score
 
     def set_difficulty(self, difficulty):
+        """ Sets game session diffficulty
+        :param difficulty: New difficulty value, one of the 
+             {Game.SOFTCORE, Game.MEDIUMCORE, Game.HARDCORE}
+        """
         self.config.set_difficulty(difficulty)
 
 class GameOverScreen:
@@ -226,10 +264,14 @@ class GameOverScreen:
     FONTSIZE = 50
 
     def __init__(self):
+        """ Initializes screen with restart button """
         self.font = pygame.font.Font(FONT_NAME,  GameOverScreen.FONTSIZE)
         self.restart_button = Button("Back to menu", (WIDTH / 2, HEIGHT * 0.85)) 
 
     def render(self, screen: pygame.Surface):
+        """ Blits text and button images onto the pygame surface
+        :param screen: pygame.Surface to render on
+        """
         text_surface_1 = self.font.render(f"Game over, {Game.get_instance().player_name}", True, BLACK)
         text_rect_1 = text_surface_1.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.07)))
         screen.blit(text_surface_1, text_rect_1)
@@ -251,6 +293,7 @@ class GameOverScreen:
             Game.get_instance().set_state(Game.STATE_MENU)
     
     def progress(self):
+        """ Progresses the button animation by one frame """
         self.restart_button.progress()
 
 
@@ -260,6 +303,7 @@ class Menu:
     DIFFICULTIES = [Game.SOFTCORE, Game.MEDIUMCORE, Game.HARDCORE]
 
     def __init__(self):
+        """ Initializes the menu with buttons and sets initial difficulty """
         self.font = pygame.font.Font(FONT_NAME,  GameOverScreen.FONTSIZE)
         
         self.start_button = Button("New Game", (WIDTH / 2, HEIGHT * 0.3))
@@ -282,6 +326,9 @@ class Menu:
         ]
 
     def render(self, screen: pygame.Surface):
+        """ Blits text and button images onto the pygame surface
+        :param screen: pygame.Surface to render on
+        """
         text_surface = self.font.render(f"<Abstract_Name>", True, BLACK)
         text_rect = text_surface.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.07)))
         screen.blit(text_surface, text_rect)
@@ -320,6 +367,9 @@ class Menu:
             self.waiting_for_input = False
 
     def handle_keystroke(self, event):
+        """ Handles keyboard input
+        :param event: pygame.Event to handle, must have KEYDOWN type
+        """
         if not self.waiting_for_input:
             return
         if event.key == pygame.K_RETURN:
@@ -331,6 +381,7 @@ class Menu:
             Game.get_instance().player_name += event.unicode
 
     def progress(self):
+        """ Progresses the button animation by one frame """
         if not self.waiting_for_input:
             for button in self.non_adaptive_buttons:
                 button.progress()
@@ -339,6 +390,7 @@ class Menu:
             self.change_name_button.update_text(f"Player: {Game.get_instance().player_name}")
 
 def main():
+    """ Runs the game """
     # Initialize PyGame, clock and GameSession
     pygame.init()
     pygame.font.init()
