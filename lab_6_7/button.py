@@ -9,11 +9,18 @@ class Button:
     COLOR = (0, 0, 0)
 
     def __init__(self, text, center):
+        """ Initializes new button
+        :param text: Displayed button text
+        :param center: List of coordinates (x, y) of the button text
+        """
         self.center = center
         self.fontsize = Button.FONTSIZE_SMALL
         self.update_text(text)
 
     def render(self, screen: pygame.Surface):
+        """ Blits button image onto given surface
+        :param screen: pygame.Surface to render button on
+        """
         screen.blit(self.text_surface, self.text_rect)
     
     def update_text(self, text=""):
@@ -37,7 +44,7 @@ class Button:
         self.update_text()
 
     def is_mouse_on(self, pos):
-        """ Checks if mouse is hovering on button
+        """ Checks if mouse is hovering over the button
         :param pos: Mouse position (x, y)
         """
         x, y = pos
