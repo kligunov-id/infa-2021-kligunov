@@ -36,3 +36,4 @@ WIDTH, HEIGHT = 1280, 720
 
 # Font
 FONT_NAME = "ShadowsIntoLight.ttf"
+FONT_SIZE = 50
