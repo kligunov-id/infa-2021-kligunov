@@ -12,7 +12,7 @@ Constants:
 
     FPS
     WIDTH, HEIGHT
-
+    FONT_NAME
 """
 
 class Color:
@@ -33,3 +33,6 @@ FPS = 30
 
 # Screen resolution
 WIDTH, HEIGHT = 1280, 720
+
+# Font
+FONT_NAME = "ShadowsIntoLight.ttf"

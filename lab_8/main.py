@@ -3,8 +3,9 @@ import pygame
 from pygame.draw import *
 from random import randint
 
-from locals import FPS, WIDTH, HEIGHT, Color
+from locals import *
 from model import Spaceship, Meteorite
+from button import Button
 
 class GameManager:
     """ Controls all game elements:
