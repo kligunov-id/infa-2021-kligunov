@@ -2,6 +2,8 @@ from math import cos, sin, pi, atan2
 import pygame
 from pygame.draw import *
 from locals import Color
+from random import randint, uniform
+
 """
 Implement game objects
 
@@ -17,16 +19,17 @@ Variables:
 
 """
 
-def draw_polygon(screen, color, x, y, vertices_r, vertices_phi):
+def draw_polygon(screen, color, x, y, vertices_r, vertices_phi, phi_0=0):
     """ Draw polygon with vertices given in polar coordinates
     :param screen: pygame.Surface to draw polygon on
     :param color: (R, G, B) color of polygon fill
     :param x: X coordinate of polygon's center
     :param y: Y coordinate of polygon's center
     :param vertices_r: List of R coordinates of veritces
-    :param vertices_phi: List of phi coordinates of vertices 
+    :param vertices_phi: List of phi coordinates of vertices
+    :param phi_0: (option) Angle of the rotation of the whole polygon
     """
-    vertices = [(r * cos(phi), r * sin(phi)) for r, phi in zip(vertices_r, vertices_phi)]
+    vertices = [(r * cos(phi + phi_0), r * sin(phi + phi_0)) for r, phi in zip(vertices_r, vertices_phi)]
     
     polygon(screen,
             color,
@@ -79,7 +82,52 @@ class Spaceship:
         :param screen: pygame.Surface to draw the spaceship on 
         """
         vertices_r = [self.length, self.half_width, self.half_width]
-        vertices_phi = [self.phi, self.phi + pi / 2, self.phi - pi / 2]
+        vertices_phi = [0, pi / 2, -pi / 2]
 
-        draw_polygon(screen, Color.DEEP_BLUE, self.x, self.y, vertices_r, vertices_phi)
+        draw_polygon(screen, Color.DEEP_BLUE, self.x, self.y, vertices_r, vertices_phi, self.phi)
 
+
+class Meteorite:
+    """ Represents meteorite which can be moved and rendered """
+    MAX_V = 5
+    MAX_V_PHI = 2 * pi / 30 * 0.5
+
+    RGB_RANGE = (30, 60)
+
+    R, D_R = 20, 3
+
+    N, D_N = 15, 5
+
+    def __init__(self, x_range, y_range):
+        """ Initializes randomly metiorite parameters:
+            * Position (x, y)
+            * Velocity (v_x, v_y)
+            * Orientation phi
+            * Angular velocity v_phi
+            * Shape (Lists of vertices coordinates vert_r and vert_phi)
+            * Color 
+        :param x_range: List (x_min, x_max) of acceptable coordinates for the spawn
+        :param y_range: List (y_min, y_max) of acceptable coordinates for the spawn  
+        """
+        self.x, self.y = randint(*x_range), randint(*y_range)
+        self.v_x, self.v_y = uniform(-Meteorite.MAX_V, Meteorite.MAX_V), uniform(0, Meteorite.MAX_V)
+
+        self.phi = 0
+        self.v_phi = uniform(-Meteorite.MAX_V_PHI, Meteorite.MAX_V_PHI)
+
+        self.color = ([randint(*Meteorite.RGB_RANGE) for _ in range(3)])
+        self.n = randint(Meteorite.N - Meteorite.D_N, Meteorite.N + Meteorite.D_N)
+        self.vert_phi = [2 * pi / self.n * i for i in range(self.n)]
+        self.vert_r = [randint(Meteorite.R - Meteorite.D_R, Meteorite.R + Meteorite.D_R) for _ in range(self.n)]
+
+    def move(self):
+        """ Calculates new coordinates and orientation """
+        self.x += self.v_x
+        self.y += self.v_y
+        self.phi += self.v_phi
+
+    def render(self, screen: pygame.Surface):
+        """ Draws meteorite on the given surface
+        :param screen: pygame.Surface to draw the spaceship on 
+        """
+        draw_polygon(screen, self.color, self.x, self.y, self.vert_r, self.vert_phi, self.phi)

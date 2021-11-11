@@ -1,9 +1,10 @@
 from math import cos, sin, pi, atan2
 import pygame
 from pygame.draw import *
+from random import randint
 
 from locals import FPS, WIDTH, HEIGHT, Color
-from model import Spaceship
+from model import Spaceship, Meteorite
 
 class GameManager:
     """ Controls all game elements:
@@ -14,6 +15,7 @@ class GameManager:
 
     def __init__(self):
         self.spaceship = Spaceship(pos = (WIDTH / 2, HEIGHT / 2))
+        self.meteorites = [Meteorite(x_range = (0, WIDTH), y_range = (0, 0)) for _ in range (2)]
 
     def handle(self, event: pygame.event.Event):
         """ Handles all user input events
@@ -28,13 +30,18 @@ class GameManager:
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         self.spaceship.render(screen)
+        for meteorite in self.meteorites:
+            meteorite.render(screen)
         return screen
 
     def progress(self):
         """ Calculates new model and animation states """
         self.spaceship.move()
         self.spaceship.handle_keys()
-
+        for meteorite in self.meteorites:
+            meteorite.move()
+        if randint(0, 10) == 0:
+            self.meteorites.append(Meteorite(x_range = (0, WIDTH), y_range = (0, 0)))
 
 def main():
     pygame.init()
