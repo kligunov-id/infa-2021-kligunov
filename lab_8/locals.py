@@ -26,6 +26,7 @@ class Color:
     CYAN = (0, 255, 255)
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
+    DEEP_BLUE = (0, 17, 102)
 
 # Refresh rate
 FPS = 30
