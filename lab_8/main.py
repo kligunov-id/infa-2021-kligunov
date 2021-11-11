@@ -6,7 +6,7 @@ from locals import FPS, WIDTH, HEIGHT, Color
 
 
 class Spaceship:
-    """ Represents a moveable, controlable and drawable spaceship """ 
+    """ Represents a movable, controllable and drawable spaceship """ 
 
     def __init__(self, pos=(WIDTH / 2, HEIGHT / 2)):
         """ Initializes spaceship parameters:
@@ -21,22 +21,22 @@ class Spaceship:
         self.v_x, self.v_y = 0, 0
         self.length = 60
         self.half_width = 25
-    
+
     def move(self):
         """ Calculates new coordinates and orientation """
         self.x += self.v_x
         self.y += self.v_y
-        
+
         # Slows spaceship, so without acceleration it will stop
         self.v_x *= 0.9
         self.v_y *= 0.9
 
-        # Turns spaceship to mouse coursor
+        # Turns spaceship towards mouse coursor
         mouse_x, mouse_y = pygame.mouse.get_pos()
         self.phi = atan2(mouse_y - self.y, mouse_x -self.x)
 
     def handle_keys(self):
-        """ Listens for WASD keys and moves starship """
+        """ Listens for WASD keys and accelerates starship """
         pressed = pygame.key.get_pressed()
         if pressed[pygame.K_w]:
             self.v_y -= 1
@@ -53,7 +53,7 @@ class Spaceship:
         """
         vertices_r = [self.length, self.half_width, self.half_width]
         vertices_phi = [self.phi, self.phi + pi / 2, self.phi - pi / 2]
-
+        
         vertices = [(r * cos(phi), r * sin(phi)) for r, phi in zip(vertices_r, vertices_phi)]
         
         polygon(screen,
@@ -73,6 +73,7 @@ class GameManager:
     def handle(self, event: pygame.event.Event):
         """ Handles all user input events
         :param event: pygame.event.Event to be handled
+        ..warning:: Spaceship acceleration is handled without events
         """
         pass
 
@@ -95,7 +96,7 @@ def main():
     pygame.font.init()
 
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    
+
     game = GameManager()
     clock = pygame.time.Clock()
     finished = False
@@ -111,7 +112,7 @@ def main():
                 game.handle(event)
 
         game.progress()
-        
+
         # Renders game
         screen.blit(game.render(), (0, 0))
 

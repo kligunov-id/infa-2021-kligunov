@@ -1,6 +1,6 @@
 from enum import Enum
 """
-Defines global scope constants for the game
+Defines global scope constants
 
 Classes:
     
@@ -16,7 +16,7 @@ Constants:
 """
 
 class Color:
-    """ Defines a set of colors used in project """
+    """ Defines a set of colors used in the project """
 
     RED  = (255, 0, 0)
     BLUE = (0, 0, 255)
