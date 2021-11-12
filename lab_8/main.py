@@ -62,6 +62,7 @@ class GameSession(GameState):
         super().__init__()
         self.spaceship = Spaceship(pos = (WIDTH / 2, HEIGHT / 2))
         self.meteorites = []
+        self.score = 0
 
     def handle(self, event: pygame.event.Event):
         """ Handles all user input events
@@ -71,17 +72,23 @@ class GameSession(GameState):
         pass
 
     def render(self):
-        """ Draws background, spaceships and meteorites
+        """ Draws background, spaceships, meteoritesand and the score
         :returns: pygame.Surface with the result
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         self.spaceship.render(screen)
         for meteorite in self.meteorites:
             meteorite.render(screen)
+        
+        text_surface = self.font.render(f"Your score: {int(self.score)}", True, Color.WHITE)
+        text_rect = text_surface.get_rect(topright = (WIDTH * 0.98, int(HEIGHT * 0.02)))
+        screen.blit(text_surface, text_rect)
+
         return screen
 
     def progress(self):
         """ Calculates new model and animation states """
+        self.score += .1
         self.spaceship.move()
         self.spaceship.handle_keys()
         for meteorite in self.meteorites:
@@ -91,10 +98,10 @@ class GameSession(GameState):
 
         for meteorite in self.meteorites:
             if self.spaceship.is_colliding(meteorite):
-                self.game.switch_to(GameOver("You have crashed into a meteorite"))
+                self.game.switch_to(GameOver("You have crashed into a meteorite", int(self.score)))
 
         if self.spaceship.is_outside_field((WIDTH, HEIGHT)):
-            self.game.switch_to(GameOver("You have flown out of screen"))
+            self.game.switch_to(GameOver("You have flown out of screen", int(self.score)))
 
 class GameMenu(GameState):
     """ Game state representing starting menu """
@@ -141,14 +148,15 @@ class GameMenu(GameState):
 class GameOver(GameState):
     """ Game state representing screen results """
     
-    def __init__(self, death_message=""):
-        """ Initializes the exit button and the death cause message """
+    def __init__(self, death_message="", score=0):
+        """ Initializes the exit button, the death cause message and the result """
         super().__init__()
-        self.menu_button = Button("Back to menu", (WIDTH / 2, HEIGHT * 0.42))
+        self.menu_button = Button("Back to menu", (WIDTH / 2, HEIGHT * 0.52))
         self.death_message = death_message
+        self.score = score
 
     def render(self):
-        """ Displays the death cause message and the exit button
+        """ Displays the death cause message, the result and  the exit button
         :returns: pygame.Surface with the result
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -160,6 +168,11 @@ class GameOver(GameState):
         text_rect = text_surface.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.2)))
         screen.blit(text_surface, text_rect)
         
+        if self.score:
+            text_surface = self.font.render(f"Your score is: {self.score}", True, Color.WHITE)
+            text_rect = text_surface.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.3)))
+            screen.blit(text_surface, text_rect)
+
         self.menu_button.render(screen)
 
         return screen
