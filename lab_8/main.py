@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from math import cos, sin, pi, atan2
+from math import cos, sin, pi, atan2, log
 import pygame
 from pygame.draw import *
-from random import randint
+from random import randint, uniform
 
 from locals import *
 from model import Spaceship, Meteorite
@@ -119,7 +119,8 @@ class GameSession(GameState):
         self.spaceship.handle_keys()
         for meteorite in self.meteorites:
             meteorite.move()
-        if randint(0, 10) == 0:
+        new_meteorite_number = int(uniform(0, log(30 + self.score) / log(30)))
+        for _ in range(new_meteorite_number):
             self.meteorites.append(Meteorite(x_range = (0, WIDTH), y_range = (0, 0)))
 
         for laser in self.lasers:
