@@ -45,6 +45,8 @@ class Spaceship:
             * Orientaion phi
             * Velocity (v_x, v_y)
             * Shape of a starship (length, half_width)
+            * Blaster percentage charge
+            * Blaster status is_charging
         :param pos: List (x, y) of the initial coordinates
         """
         self.x, self.y = pos
@@ -52,9 +54,11 @@ class Spaceship:
         self.v_x, self.v_y = 0, 0
         self.length = 60
         self.half_width = 25
+        self.is_charging = False
+        self.charge = 0
 
     def move(self):
-        """ Calculates new coordinates and orientation """
+        """ Calculates new coordinates and orientation, also charges blaster """
         self.x += self.v_x
         self.y += self.v_y
 
@@ -68,6 +72,25 @@ class Spaceship:
         # Turns spaceship towards mouse coursor
         mouse_x, mouse_y = pygame.mouse.get_pos()
         self.phi = atan2(mouse_y - self.y, mouse_x -self.x)
+
+        if self.is_charging:
+            self.charge += 1
+            self.charge = min(100, self.charge)
+    
+    def start_charging(self):
+        """ Starts blaster charging """
+        self.is_charging = True
+
+    def fire(self):
+        """ Stops charging and fires a laser
+        :returns: Laser object
+        """
+        self.is_charging = False
+        if self.charge > 5:
+            self.charge = 0
+            return None
+        else:
+            return None
 
     def handle_keys(self):
         """ Listens for WASD keys and accelerates starship """

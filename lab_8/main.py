@@ -63,16 +63,22 @@ class GameSession(GameState):
         self.spaceship = Spaceship(pos = (WIDTH / 2, HEIGHT / 2))
         self.meteorites = []
         self.score = 0
+        self.lasers = []
 
     def handle(self, event: pygame.event.Event):
         """ Handles all user input events
         :param event: pygame.event.Event to be handled
         ..warning:: Spaceship acceleration is handled without events
         """
-        pass
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.spaceship.start_charging()
+        elif event.type == pygame.MOUSEBUTTONUP:
+            new_laser = self.spaceship.fire()
+            if new_laser is not None:
+                self.lasers.append(new_laser)
 
     def render(self):
-        """ Draws background, spaceships, meteoritesand and the score
+        """ Draws background, spaceships, meteoritesand, the score and the charge bar
         :returns: pygame.Surface with the result
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -82,6 +88,10 @@ class GameSession(GameState):
         
         text_surface = self.font.render(f"Your score: {int(self.score)}", True, Color.WHITE)
         text_rect = text_surface.get_rect(topright = (WIDTH * 0.98, int(HEIGHT * 0.02)))
+        screen.blit(text_surface, text_rect)
+
+        text_surface = self.font.render(f"Blaster charge: {self.spaceship.charge}%", True, Color.WHITE)
+        text_rect = text_surface.get_rect(topleft = (WIDTH * 0.02, int(HEIGHT * 0.02)))
         screen.blit(text_surface, text_rect)
 
         return screen
