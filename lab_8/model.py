@@ -15,11 +15,23 @@ Classes:
 
 Functions:
 
-    draw_polygon()
-
-Variables:
+    draw_polygon(screen, color, x, y, vertices_r, vertices_phi, phi_0=0)
+    def dist2(p, q)
 
 """
+
+def dist2(p, q):
+    """
+    Returns distance squared between points p and q
+    
+    :param p: List of coordinates (x, y) of the first point
+    :param q: List of coordinates (x, y) of the second point
+    
+    .. warning:: Distance returned is squared
+    """
+    x1, y1 = p
+    x2, y2 = q
+    return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
 def draw_polygon(screen, color, x, y, vertices_r, vertices_phi, phi_0=0):
     """ Draw polygon with vertices given in polar coordinates
@@ -87,7 +99,7 @@ class Spaceship:
         :returns: Laser object
         """
         self.is_charging = False
-        if self.charge > 5:
+        if self.charge > 15:
             charge = self.charge
             self.charge = 0
             return Laser((self.x + self.length * cos(self.phi), self.y + self.length * sin(self.phi)), self.phi, charge)
@@ -246,4 +258,4 @@ class Laser:
         :param meteorite: Meteorite to check collision with
         :returns: True if is hitting, False otherwise
         """
-        pass
+        return (Laser.R + meteorite.R) ** 2 >= dist2((self.x, self.y), (meteorite.x, meteorite.y))

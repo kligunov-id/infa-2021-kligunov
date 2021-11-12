@@ -98,6 +98,19 @@ class GameSession(GameState):
         screen.blit(text_surface, text_rect)
 
         return screen
+    
+    def manage_laser_destruction(self):
+        """ Deletes meteorites and lasers which have collided """
+        for laser in self.lasers:
+            for meteorite in self.meteorites:
+                if laser.is_hitting(meteorite):
+                    laser.alive = False
+                    meteorite.alive = False
+        prev_num = len(self.meteorites)
+        self.meteorites[:] = [m for m in self.meteorites if m.alive]
+        self.lasers[:] = [m for m in self.lasers if m.alive]
+        new_num = len(self.meteorites)
+        self.score += new_num - prev_num
 
     def progress(self):
         """ Calculates new model and animation states """
@@ -118,6 +131,8 @@ class GameSession(GameState):
 
         if self.spaceship.is_outside_field((WIDTH, HEIGHT)):
             self.game.switch_to(GameOver("You have flown out of screen", int(self.score)))
+
+        self.manage_laser_destruction()
 
 class GameMenu(GameState):
     """ Game state representing starting menu """
