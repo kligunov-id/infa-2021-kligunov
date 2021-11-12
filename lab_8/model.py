@@ -58,6 +58,9 @@ class Spaceship:
         self.x += self.v_x
         self.y += self.v_y
 
+        # Apply gravity
+        self.v_y += 0.4
+
         # Slows spaceship, so without acceleration it will stop
         self.v_x *= 0.9
         self.v_y *= 0.9
@@ -167,6 +170,9 @@ class Meteorite:
         self.x += self.v_x
         self.y += self.v_y
         self.phi += self.v_phi
+
+        # Apply gravity
+        self.v_y += 0.1
 
     def render(self, screen: pygame.Surface):
         """ Draws meteorite on the given surface
