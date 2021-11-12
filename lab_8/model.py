@@ -94,7 +94,7 @@ class Spaceship:
         """
         width, height = screen_size
         return (self.x < 0 or width < self.x
-            or self.y > 0 or height < self.y)
+            or self.y < 0 or height < self.y)
 
     def is_inside(self, point):
         """ Checks if a given point is inside the starship

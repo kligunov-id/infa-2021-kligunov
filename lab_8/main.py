@@ -93,6 +93,9 @@ class GameSession(GameState):
             if self.spaceship.is_colliding(meteorite):
                 self.game.switch_to(GameOver("You have crashed into a meteorite"))
 
+        if self.spaceship.is_outside_field((WIDTH, HEIGHT)):
+            self.game.switch_to(GameOver("You have flown out of screen"))
+
 class GameMenu(GameState):
     """ Game state representing starting menu """
     
