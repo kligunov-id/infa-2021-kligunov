@@ -10,6 +10,7 @@ Implement game objects
 Classes:
 
     Spaceship
+    Meteorite
 
 Functions:
 
@@ -86,6 +87,47 @@ class Spaceship:
 
         draw_polygon(screen, Color.DEEP_BLUE, self.x, self.y, vertices_r, vertices_phi, self.phi)
 
+    def is_outside_field(self, screen_size):
+        """ Checks if the starship is outside the game screen
+        :param screen_size: List (width, height)
+        :returns: True if spaceship is outside, False otherwise
+        """
+        width, height = screen_size
+        return (self.x < 0 or width < self.x
+            or self.y > 0 or height < self.y)
+
+    def is_inside(self, point):
+        """ Checks if a given point is inside the starship
+        :param point: List (x, y) of point coordinates
+        :returns: True if the point is inside, False otherwise
+        """        
+        x, y = point
+        x -= self.x
+        y -= self.y
+        """ Get vector in canonical basis
+        (x axis towards farthest vertice, y alongside shortest side)
+        by rotation by -phi
+        """
+        x, y = cos(self.phi) * x + sin(self.phi) * y, -sin(self.phi) * x + cos(self.phi) * y
+
+        # Scales
+        x /= self.length
+        y /= self.half_width
+
+        # Triangle is an intersection of x > 0, x + y < 1 and x - y < 1
+        return x >= 0 and x + y <= 1 and x - y <= 1
+
+    def is_colliding(self, meteorite):
+        """ Checks if the starship is touching a meteorite
+        :param meteorite: Meteorite object to check collisions with
+        :returns: True if spaceship is colliding, False otherwise
+        """
+        vertices = [(r * cos(phi + meteorite.phi) + meteorite.x,
+            r * sin(phi + meteorite.phi) + meteorite.y) for r, phi in zip(meteorite.vert_r, meteorite.vert_phi)]
+        for v in vertices:
+            if self.is_inside(v):
+                return True
+        return False
 
 class Meteorite:
     """ Represents meteorite which can be moved and rendered """

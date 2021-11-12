@@ -61,7 +61,7 @@ class GameSession(GameState):
         """ Initializes all game elements """
         super().__init__()
         self.spaceship = Spaceship(pos = (WIDTH / 2, HEIGHT / 2))
-        self.meteorites = [Meteorite(x_range = (0, WIDTH), y_range = (0, 0)) for _ in range (2)]
+        self.meteorites = []
 
     def handle(self, event: pygame.event.Event):
         """ Handles all user input events
@@ -88,6 +88,10 @@ class GameSession(GameState):
             meteorite.move()
         if randint(0, 10) == 0:
             self.meteorites.append(Meteorite(x_range = (0, WIDTH), y_range = (0, 0)))
+
+        for meteorite in self.meteorites:
+            if self.spaceship.is_colliding(meteorite):
+                self.game.switch_to(GameMenu())
 
 class GameMenu(GameState):
     """ Game state representing starting menu """

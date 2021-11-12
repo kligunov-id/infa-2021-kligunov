@@ -12,7 +12,8 @@ Constants:
 
     FPS
     WIDTH, HEIGHT
-    FONT_NAME
+    FONT_NAME, FONT_SIZE
+
 """
 
 class Color:
