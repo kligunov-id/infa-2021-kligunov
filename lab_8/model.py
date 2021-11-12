@@ -11,6 +11,7 @@ Classes:
 
     Spaceship
     Meteorite
+    Laser
 
 Functions:
 
@@ -74,7 +75,7 @@ class Spaceship:
         self.phi = atan2(mouse_y - self.y, mouse_x -self.x)
 
         if self.is_charging:
-            self.charge += 1
+            self.charge += 2
             self.charge = min(100, self.charge)
     
     def start_charging(self):
@@ -87,8 +88,9 @@ class Spaceship:
         """
         self.is_charging = False
         if self.charge > 5:
+            charge = self.charge
             self.charge = 0
-            return None
+            return Laser((self.x + self.length * cos(self.phi), self.y + self.length * sin(self.phi)), self.phi, charge)
         else:
             return None
 
@@ -171,7 +173,8 @@ class Meteorite:
             * Position (x, y)
             * Velocity (v_x, v_y)
             * Orientation phi
-            * Angular velocity v_phi
+            * Angular velocity v_phiif self.charge > 5:
+            self.charge = 
             * Shape (Lists of vertices coordinates vert_r and vert_phi)
             * Color 
         :param x_range: List (x_min, x_max) of acceptable coordinates for the spawn
@@ -187,6 +190,8 @@ class Meteorite:
         self.n = randint(Meteorite.N - Meteorite.D_N, Meteorite.N + Meteorite.D_N)
         self.vert_phi = [2 * pi / self.n * i for i in range(self.n)]
         self.vert_r = [randint(Meteorite.R - Meteorite.D_R, Meteorite.R + Meteorite.D_R) for _ in range(self.n)]
+        
+        self.alive = True
 
     def move(self):
         """ Calculates new coordinates and orientation """
@@ -199,6 +204,46 @@ class Meteorite:
 
     def render(self, screen: pygame.Surface):
         """ Draws meteorite on the given surface
-        :param screen: pygame.Surface to draw the spaceship on 
+        :param screen: pygame.Surface to draw the meteorite on 
         """
         draw_polygon(screen, self.color, self.x, self.y, self.vert_r, self.vert_phi, self.phi)
+
+class Laser:
+    """ Represents laser impulses which destroy meteorites on impact """
+    R = 5
+    def __init__(self, pos, phi, charge):
+        """ Initializes Laser parameters:
+            * Position (x, y)
+            * Velocity (v_x, v_y)
+            * Color 
+        :param pos: List (x, y) of coordinates of a center
+        :param phi: Orientation angle
+        :param charge: Charge percentage [0, 100] of the blaster
+        """
+        self.x, self.y = pos
+        v = charge / 3
+        self.v_x, self.v_y = v * cos(phi), v * sin(phi)
+
+        self.color = Color.CITRINE
+        self.alive = True
+
+    def move(self):
+        """ Calculates new coordinates and orientation """
+        self.x += self.v_x
+        self.y += self.v_y
+
+        # Apply gravity
+        self.v_y += 0.25
+
+    def render(self, screen: pygame.Surface):
+        """ Draws laser on the given surface
+        :param screen: pygame.Surface to draw the laser on 
+        """
+        circle(screen, self.color, (self.x, self.y), Laser.R)
+    
+    def is_hitting(self, meteorite):
+        """ Checks if the laser is touching meteorite
+        :param meteorite: Meteorite to check collision with
+        :returns: True if is hitting, False otherwise
+        """
+        pass

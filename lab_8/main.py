@@ -85,7 +85,10 @@ class GameSession(GameState):
         self.spaceship.render(screen)
         for meteorite in self.meteorites:
             meteorite.render(screen)
-        
+
+        for laser in self.lasers:
+            laser.render(screen)
+
         text_surface = self.font.render(f"Your score: {int(self.score)}", True, Color.WHITE)
         text_rect = text_surface.get_rect(topright = (WIDTH * 0.98, int(HEIGHT * 0.02)))
         screen.blit(text_surface, text_rect)
@@ -105,6 +108,9 @@ class GameSession(GameState):
             meteorite.move()
         if randint(0, 10) == 0:
             self.meteorites.append(Meteorite(x_range = (0, WIDTH), y_range = (0, 0)))
+
+        for laser in self.lasers:
+            laser.move()
 
         for meteorite in self.meteorites:
             if self.spaceship.is_colliding(meteorite):

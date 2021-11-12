@@ -28,6 +28,7 @@ class Color:
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
     DEEP_BLUE = (0, 17, 102)
+    CITRINE = (204, 204, 0)
 
 # Refresh rate
 FPS = 30
