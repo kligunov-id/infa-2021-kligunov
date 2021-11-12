@@ -109,13 +109,13 @@ class Spaceship:
     def handle_keys(self):
         """ Listens for WASD keys and accelerates starship """
         pressed = pygame.key.get_pressed()
-        if pressed[pygame.K_w]:
+        if pressed[pygame.K_w] or pressed[pygame.K_UP]:
             self.v_y -= 1
-        if pressed[pygame.K_s]:
+        if pressed[pygame.K_s] or pressed[pygame.K_DOWN]:
             self.v_y += 1
-        if pressed[pygame.K_a]:
+        if pressed[pygame.K_a] or pressed[pygame.K_LEFT]:
             self.v_x -= 1
-        if pressed[pygame.K_d]:
+        if pressed[pygame.K_d] or pressed[pygame.K_RIGHT]:
             self.v_x += 1
 
     def render(self, screen: pygame.Surface):
