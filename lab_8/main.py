@@ -91,7 +91,7 @@ class GameSession(GameState):
 
         for meteorite in self.meteorites:
             if self.spaceship.is_colliding(meteorite):
-                self.game.switch_to(GameMenu())
+                self.game.switch_to(GameOver("You have crashed into a meteorite"))
 
 class GameMenu(GameState):
     """ Game state representing starting menu """
@@ -133,6 +133,47 @@ class GameMenu(GameState):
             pygame.event.post(pygame.event.Event(pygame.QUIT))
         elif self.start_button.is_mouse_on(event.pos):
             self.game.switch_to(GameSession())
+
+
+class GameOver(GameState):
+    """ Game state representing screen results """
+    
+    def __init__(self, death_message=""):
+        """ Initializes the exit button and the death cause message """
+        super().__init__()
+        self.menu_button = Button("Back to menu", (WIDTH / 2, HEIGHT * 0.42))
+        self.death_message = death_message
+
+    def render(self):
+        """ Displays the death cause message and the exit button
+        :returns: pygame.Surface with the result
+        """
+        screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        text_surface = self.font.render(f"Game Over", True, Color.WHITE)
+        text_rect = text_surface.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.1)))
+        screen.blit(text_surface, text_rect)
+        
+        text_surface = self.font.render(self.death_message, True, Color.WHITE)
+        text_rect = text_surface.get_rect(center = (WIDTH // 2, int(HEIGHT * 0.2)))
+        screen.blit(text_surface, text_rect)
+        
+        self.menu_button.render(screen)
+
+        return screen
+
+    def progress(self):
+        """ Calculates new animation states """
+        self.menu_button.progress()
+
+    def handle(self, event: pygame.event.Event):
+        """ Handles button clicks
+        :param event: pygame.event.Event to be handled
+        """
+        if event.type != pygame.MOUSEBUTTONDOWN:
+            return
+        if self.menu_button.is_mouse_on(event.pos):
+            self.game.switch_to(GameMenu())
+
 
 def main():
     pygame.init()
